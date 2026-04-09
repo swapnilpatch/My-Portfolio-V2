@@ -1,0 +1,2781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swapnil Tripathi — Growth Systems Architect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;700&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+
+/* =============================================
+   RESET & ROOT — Deep Navy + Amber/Gold
+============================================= */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg:      #07081C;
+  --surface: #0C0E26;
+  --surf2:   #11152F;
+  --surf3:   #171A38;
+  --accent:  #E8A020;
+  --acR:     232,160,32;
+  --orange:  #FF5C20;
+  --orR:     255,92,32;
+  --teal:    #1B8A90;
+  --blue:    #2563EB;
+  --text:    #F0EDE8;
+  --text2:   #7A7E98;
+  --text3:   #2E3155;
+  --border:  #1A1E3C;
+  --border2: #222648;
+  --ease:    cubic-bezier(0.16,1,0.3,1);
+}
+
+html { scroll-behavior:smooth; overflow-x:hidden; }
+
+body {
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Plus Jakarta Sans', sans-serif;
+  font-size:16px;
+  line-height:1.6;
+  overflow-x:hidden;
+  cursor:none;
+}
+
+/* Grain overlay */
+body::after {
+  content:''; position:fixed; inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity:0.025; pointer-events:none; z-index:99999; mix-blend-mode:screen;
+}
+
+img { display:block; max-width:100%; }
+a { text-decoration:none; color:inherit; }
+button { font-family:inherit; cursor:none; }
+
+/* =============================================
+   CURSOR
+============================================= */
+#c-dot {
+  width:8px; height:8px; background:var(--accent);
+  border-radius:50%; position:fixed; top:0; left:0;
+  pointer-events:none; z-index:999999;
+  transform:translate(-50%,-50%);
+  transition:width .2s var(--ease), height .2s var(--ease);
+}
+#c-ring {
+  width:44px; height:44px;
+  border:1.5px solid rgba(var(--acR),.35);
+  border-radius:50%; position:fixed; top:0; left:0;
+  pointer-events:none; z-index:999998;
+  transform:translate(-50%,-50%);
+  transition:width .4s var(--ease), height .4s var(--ease), border-color .3s ease, background .3s ease;
+}
+#c-ring.big { width:64px; height:64px; border-color:rgba(var(--acR),.6); background:rgba(var(--acR),.05); }
+
+/* =============================================
+   LOADER — LetterGlitch (TXT 4 concept)
+============================================= */
+#loader {
+  position:fixed; inset:0; z-index:1000000;
+  background:#030410;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  transition:opacity .9s ease, visibility .9s ease;
+}
+#loader.out { opacity:0; visibility:hidden; }
+
+#glitch-canvas {
+  position:absolute; inset:0; width:100%; height:100%;
+  opacity:0.28;
+}
+/* Vignette over glitch */
+#loader::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 50% 50%, rgba(232,160,32,.12), transparent 70%),
+             radial-gradient(circle, transparent 40%, #030410 100%);
+  z-index:1;
+}
+
+.ld-content {
+  position:relative; z-index:2;
+  display:flex; flex-direction:column; align-items:center;
+}
+.ld-system {
+  font-family:'JetBrains Mono', monospace;
+  font-size:10px; letter-spacing:.3em; text-transform:uppercase;
+  color:rgba(232,160,32,.5); margin-bottom:20px;
+}
+.ld-name {
+  font-family:'Unbounded', sans-serif; font-weight:900;
+  font-size:clamp(38px, 7vw, 80px);
+  line-height:.88; letter-spacing:-.03em;
+  color:var(--text); text-align:center;
+}
+.ld-name em { color:var(--accent); font-style:normal; display:block; }
+.ld-status {
+  font-family:'JetBrains Mono', monospace; font-size:11px;
+  color:rgba(var(--acR),.7); letter-spacing:.12em;
+  margin-top:24px; min-height:18px;
+}
+.ld-progress-bar {
+  margin-top:12px; display:flex; align-items:center;
+  font-family:'JetBrains Mono', monospace; font-size:13px;
+  color:var(--text2);
+}
+.ld-progress-bar span.filled { color:var(--accent); }
+.ld-pct { margin-left:10px; color:rgba(var(--acR),.7); font-size:11px; }
+
+/* =============================================
+   SCROLL PROGRESS
+============================================= */
+#s-prog {
+  position:fixed; top:0; left:0; height:2px;
+  background:var(--accent); z-index:10000;
+  width:0%; transition:width .08s linear;
+}
+
+/* =============================================
+   NAV
+============================================= */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:5000;
+  padding:28px 64px;
+  display:flex; align-items:center; justify-content:space-between;
+  transition:padding .35s ease, background .4s ease, border-color .4s ease;
+  border-bottom:1px solid transparent;
+}
+nav.scrolled {
+  padding:16px 64px;
+  background:rgba(7,8,28,.94);
+  backdrop-filter:blur(20px);
+  border-bottom-color:var(--border);
+}
+.nav-logo {
+  font-family:'Unbounded', sans-serif;
+  font-weight:900; font-size:14px; letter-spacing:-.01em;
+  display:flex; align-items:center; gap:10px;
+}
+.nav-avail-dot {
+  width:7px; height:7px; border-radius:50%; background:#4ADE80;
+  box-shadow:0 0 8px rgba(74,222,128,.5);
+  animation:alivePulse 2s ease-in-out infinite;
+}
+@keyframes alivePulse {
+  0%,100%{transform:scale(1); box-shadow:0 0 8px rgba(74,222,128,.5);}
+  50%{transform:scale(1.3); box-shadow:0 0 14px rgba(74,222,128,.8);}
+}
+
+.nav-links { display:flex; align-items:center; gap:40px; list-style:none; }
+.nav-links a {
+  font-family:'JetBrains Mono', monospace;
+  font-size:10px; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--text2); position:relative; transition:color .25s ease;
+}
+.nav-links a::after {
+  content:''; position:absolute; left:0; bottom:-3px;
+  width:0%; height:1px; background:var(--accent);
+  transition:width .3s var(--ease);
+}
+.nav-links a:hover { color:var(--accent); }
+.nav-links a:hover::after { width:100%; }
+.nav-cta {
+  background:var(--accent) !important; color:#000 !important;
+  padding:9px 22px; border-radius:2px;
+  font-weight:700 !important;
+}
+.nav-cta::after { display:none !important; }
+.nav-cta:hover { background:var(--text) !important; }
+
+.nav-right {
+  font-family:'JetBrains Mono', monospace; font-size:10px;
+  color:var(--text2); letter-spacing:.1em;
+  display:flex; align-items:center; gap:8px;
+}
+
+/* =============================================
+   HERO — WebGL Shader Background (TXT 3)
+============================================= */
+.hero {
+  min-height:100vh; position:relative; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:flex-end;
+  padding:140px 64px 80px;
+}
+
+#hero-canvas {
+  position:absolute; inset:0;
+  pointer-events:none; z-index:0;
+  opacity:.75;
+}
+
+/* Dark overlay so text is readable */
+.hero-overlay {
+  position:absolute; inset:0; z-index:1;
+  background:linear-gradient(
+    to top,
+    rgba(7,8,28,1) 0%,
+    rgba(7,8,28,.85) 30%,
+    rgba(7,8,28,.45) 65%,
+    rgba(7,8,28,.2) 100%
+  );
+}
+
+.hero-inner { position:relative; z-index:2; }
+
+.hero-badge {
+  display:inline-flex; align-items:center; gap:10px;
+  font-family:'JetBrains Mono', monospace; font-size:10px;
+  letter-spacing:.25em; text-transform:uppercase;
+  color:var(--accent);
+  border:1px solid rgba(var(--acR),.3);
+  padding:8px 16px; border-radius:2px; margin-bottom:28px;
+  background:rgba(var(--acR),.06);
+  opacity:0; animation:fadeUp .6s var(--ease) .5s forwards;
+}
+.hero-badge-dot { width:5px; height:5px; border-radius:50%; background:var(--accent); }
+
+/* BIG NAME */
+.hero-name {
+  font-family:'Unbounded', sans-serif; font-weight:900;
+  font-size:clamp(60px, 14vw, 200px);
+  line-height:.86; letter-spacing:-.04em;
+  margin-bottom:32px; position:relative;
+}
+.hero-name .n1 {
+  display:block; color:var(--text);
+  opacity:0; animation:fadeUp .9s var(--ease) .7s forwards;
+}
+.hero-name .n2 {
+  display:block; color:var(--accent);
+  opacity:0; animation:fadeUp .9s var(--ease) .85s forwards;
+}
+
+/* Glitch on name */
+.glitch { position:relative; display:inline-block; }
+.glitch::before, .glitch::after {
+  content:attr(data-text); position:absolute; top:0; left:0;
+  pointer-events:none; width:100%;
+}
+.glitch::before {
+  color:rgba(255,92,32,.75);
+  animation:gl1 7s ease-in-out infinite;
+  clip-path:polygon(0 15%, 100% 15%, 100% 40%, 0 40%);
+}
+.glitch::after {
+  color:rgba(27,138,144,.75);
+  animation:gl2 7s ease-in-out infinite;
+  clip-path:polygon(0 62%, 100% 62%, 100% 84%, 0 84%);
+}
+@keyframes gl1 {
+  0%,88%,100%{transform:none;opacity:0;}
+  89%{transform:translate(-5px,2px);opacity:.9;}
+  90%{transform:translate(4px,-2px);opacity:.9;}
+  91%{transform:none;opacity:0;}
+  94%{transform:translate(3px,-1px);opacity:.9;}
+  95%{transform:none;opacity:0;}
+}
+@keyframes gl2 {
+  0%,88%,100%{transform:none;opacity:0;}
+  89%{transform:translate(5px,-2px);opacity:.9;}
+  90%{transform:translate(-3px,2px);opacity:.9;}
+  91%{transform:none;opacity:0;}
+  94%{transform:translate(-4px,1px);opacity:.9;}
+  95%{transform:none;opacity:0;}
+}
+
+/* Hero bio — short punchy copy */
+.hero-bio-wrap {
+  display:grid; grid-template-columns:1.1fr 1fr; gap:60px; align-items:end;
+  opacity:0; animation:fadeUp .8s var(--ease) 1.05s forwards;
+}
+.hero-bio p {
+  font-size:18px; font-weight:300; color:rgba(240,237,232,.75);
+  line-height:1.8; max-width:440px; margin-bottom:28px;
+}
+.hero-bio p strong { color:var(--text); font-weight:600; }
+.hero-bio-line {
+  width:32px; height:2px; background:var(--accent); margin-bottom:20px;
+}
+
+.hero-btns { display:flex; gap:12px; flex-wrap:wrap; margin-top:4px; }
+
+.btn-primary {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:14px 30px;
+  background:var(--accent); color:#000;
+  font-family:'Unbounded', sans-serif;
+  font-size:10px; font-weight:900; letter-spacing:.15em; text-transform:uppercase;
+  border:none; border-radius:2px;
+  position:relative; overflow:hidden;
+  transition:transform .3s var(--ease), box-shadow .3s var(--ease);
+}
+.btn-primary::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(120deg, transparent 30%, rgba(255,255,255,.25) 50%, transparent 70%);
+  transform:translateX(-100%); transition:transform .5s ease;
+}
+.btn-primary:hover::before { transform:translateX(100%); }
+.btn-primary:hover { transform:translateY(-3px); box-shadow:0 14px 34px rgba(var(--acR),.35); }
+
+.btn-secondary {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:14px 30px; background:transparent; color:var(--text);
+  font-family:'Unbounded', sans-serif;
+  font-size:10px; font-weight:700; letter-spacing:.15em; text-transform:uppercase;
+  border:1px solid var(--border2); border-radius:2px;
+  transition:all .3s var(--ease);
+}
+.btn-secondary:hover { border-color:var(--accent); color:var(--accent); transform:translateY(-3px); }
+
+/* Hero metrics dashboard */
+.hero-metrics {
+  display:grid; grid-template-columns:1fr 1fr; gap:1px;
+  background:var(--border); border:1px solid var(--border);
+}
+.h-metric { background:rgba(12,14,38,.9); padding:20px 22px; }
+.h-metric-val {
+  font-family:'JetBrains Mono', monospace;
+  font-size:clamp(20px, 3vw, 36px); font-weight:700;
+  color:var(--accent); line-height:1; display:block;
+}
+.h-metric-lbl {
+  font-size:9px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--text2); display:block; margin-top:5px;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(28px); }
+  to   { opacity:1; transform:none; }
+}
+
+/* =============================================
+   TICKER
+============================================= */
+.ticker-wrap {
+  background:var(--surface); overflow:hidden;
+  border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+}
+.ticker-row { padding:14px 0; display:flex; align-items:center; }
+.ticker-row.r2 { background:var(--surf2); padding:10px 0; }
+.ticker-track { display:inline-flex; animation:tickFwd 32s linear infinite; }
+.ticker-row.r2 .ticker-track { animation:tickRev 28s linear infinite; }
+@keyframes tickFwd { from{transform:translateX(0);} to{transform:translateX(-50%);} }
+@keyframes tickRev { from{transform:translateX(-50%);} to{transform:translateX(0);} }
+
+.t-item {
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  padding:0 28px; display:flex; align-items:center; gap:28px;
+  color:var(--text2);
+}
+.t-item.hi { color:var(--accent); }
+.t-sep { width:4px; height:4px; border-radius:50%; background:var(--border2); flex-shrink:0; }
+
+/* =============================================
+   SECTION COMMONS
+============================================= */
+section { padding:120px 64px; }
+
+.s-label {
+  font-family:'JetBrains Mono', monospace;
+  font-size:10px; font-weight:700; letter-spacing:.3em; text-transform:uppercase;
+  color:var(--accent); display:flex; align-items:center; gap:14px; margin-bottom:14px;
+}
+.s-label::before { content:''; width:22px; height:1px; background:var(--accent); }
+
+.s-title {
+  font-family:'Unbounded', sans-serif; font-weight:900;
+  font-size:clamp(30px, 4.5vw, 56px);
+  letter-spacing:-.03em; line-height:1; color:var(--text);
+}
+
+/* Scroll reveal */
+.rv {
+  opacity:0; transform:translateY(24px);
+  transition:opacity .7s var(--ease), transform .7s var(--ease);
+}
+.rv.in { opacity:1; transform:none; }
+.rv.d1{transition-delay:.1s;} .rv.d2{transition-delay:.18s;}
+.rv.d3{transition-delay:.26s;} .rv.d4{transition-delay:.34s;} .rv.d5{transition-delay:.42s;}
+
+/* =============================================
+   ABOUT — "Systems Thinker. Execution Machine."
+============================================= */
+#about {
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  position:relative; overflow:hidden;
+}
+.about-wm {
+  position:absolute; font-family:'Unbounded', sans-serif; font-weight:900;
+  font-size:clamp(100px, 20vw, 280px); line-height:1;
+  color:rgba(var(--acR),.03); right:-40px; top:50%; transform:translateY(-50%);
+  pointer-events:none; user-select:none; letter-spacing:-.05em;
+}
+
+.about-headline {
+  margin-bottom:72px;
+}
+.about-hl-main {
+  font-family:'Unbounded', sans-serif; font-weight:900;
+  font-size:clamp(36px, 5.5vw, 68px);
+  letter-spacing:-.04em; line-height:.95; color:var(--text);
+  margin-bottom:12px;
+}
+.about-hl-sub {
+  font-family:'Instrument Serif', serif; font-style:italic;
+  font-size:clamp(24px, 3.5vw, 44px);
+  color:var(--accent); line-height:1;
+}
+
+/* 3D scroll card */
+.about-3d-wrap { perspective:1400px; perspective-origin:50% 0%; }
+#about-card-3d {
+  transform:perspective(1400px) rotateX(18deg);
+  transform-origin:50% 0%; will-change:transform;
+  transition:transform .08s linear;
+}
+.about-card {
+  display:grid; grid-template-columns:1.05fr 1fr;
+  background:var(--surf2); border:1px solid var(--border2);
+  border-radius:3px;
+  box-shadow:0 4px 8px rgba(0,0,0,.4), 0 20px 60px rgba(0,0,0,.5), 0 80px 120px rgba(0,0,0,.3);
+  overflow:hidden;
+}
+.about-left { padding:56px; border-right:1px solid var(--border); }
+.about-right { padding:56px; }
+
+.about-narrative p {
+  font-size:16px; font-weight:300; color:var(--text2);
+  line-height:1.9; margin-bottom:24px;
+}
+.about-narrative p:last-child { margin-bottom:0; }
+.about-narrative strong { color:var(--text); font-weight:600; }
+.about-narrative em { color:var(--accent); font-style:normal; font-weight:600; }
+
+.about-quote {
+  font-family:'Instrument Serif', serif; font-style:italic;
+  font-size:clamp(19px, 2.5vw, 28px); line-height:1.3;
+  color:var(--text); margin-bottom:28px;
+  border-left:3px solid var(--accent); padding-left:20px;
+}
+
+.cap-grid { display:flex; flex-direction:column; gap:10px; }
+.cap-item {
+  display:flex; align-items:center; gap:16px;
+  padding:14px 18px; border:1px solid var(--border);
+  border-radius:2px; position:relative; overflow:hidden;
+  transition:all .3s var(--ease);
+}
+.cap-item::before {
+  content:''; position:absolute; left:0; top:0; bottom:0;
+  width:3px; background:var(--accent);
+  transform:scaleY(0); transform-origin:center;
+  transition:transform .3s var(--ease);
+}
+.cap-item:hover { border-color:rgba(var(--acR),.35); background:rgba(var(--acR),.04); }
+.cap-item:hover::before { transform:scaleY(1); }
+.cap-icon { font-size:15px; flex-shrink:0; }
+.cap-text { font-size:13.5px; color:var(--text); font-weight:400; }
+
+/* =============================================
+   CASE STUDIES — Collegedunia FIRST (featured)
+============================================= */
+#case-studies {
+  background:var(--bg); border-top:1px solid var(--border);
+}
+.cs-head {
+  display:flex; justify-content:space-between; align-items:flex-end;
+  margin-bottom:56px;
+}
+.cs-head-note {
+  font-size:13px; color:var(--text2); font-weight:300;
+  max-width:220px; line-height:1.75; text-align:right;
+}
+
+/* Magazine grid — Collegedunia featured */
+.cs-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:auto;
+  gap:3px;
+}
+
+.cs-card {
+  position:relative; overflow:hidden;
+  cursor:none; background:var(--surface);
+  display:flex; flex-direction:column; justify-content:flex-end;
+  min-height:48vh;
+}
+/* Collegedunia — featured full width tall */
+.cs-card:nth-child(1) { grid-column:1 / -1; min-height:58vh; }
+/* Grevol — left spanning rows 2+3 */
+.cs-card:nth-child(2) { grid-column:1; grid-row:2 / 4; min-height:58vh; }
+/* Study Abroad — right top */
+.cs-card:nth-child(3) { grid-column:2; grid-row:2; min-height:28vh; }
+/* UPSC — right bottom */
+.cs-card:nth-child(4) { grid-column:2; grid-row:3; min-height:28vh; }
+
+.cs-bg { position:absolute; inset:0; transition:transform .7s var(--ease); }
+.cs-card:hover .cs-bg { transform:scale(1.04); }
+
+/* Brand logo watermark in cards */
+.cs-brand-wm {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  pointer-events:none;
+}
+.cs-brand-text {
+  font-family:'Unbounded', sans-serif; font-weight:900;
+  font-size:min(22vw, 200px); letter-spacing:-.05em;
+  line-height:1; opacity:.04;
+  user-select:none;
+}
+
+/* Brand logo badge inside card */
+.cs-logo-badge {
+  position:absolute; top:24px; right:28px;
+  padding:8px 14px; border-radius:2px;
+  font-family:'Unbounded', sans-serif; font-size:9px; font-weight:900;
+  letter-spacing:.2em; text-transform:uppercase;
+  backdrop-filter:blur(10px);
+}
+
+/* Tag — FIXED alignment */
+.cs-tag {
+  position:absolute; top:24px; left:28px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:9px; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--accent);
+  background:rgba(7,8,28,.75);
+  border:1px solid rgba(var(--acR),.35);
+  padding:5px 12px; border-radius:2px;
+  backdrop-filter:blur(8px);
+  white-space:nowrap; /* FIXED: prevent line breaks */
+}
+
+.cs-content {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; justify-content:flex-end;
+  padding:40px 44px;
+  background:linear-gradient(to top, rgba(7,8,28,.98) 0%, rgba(7,8,28,.6) 45%, transparent 80%);
+}
+.cs-cat {
+  font-family:'JetBrains Mono', monospace;
+  font-size:9px; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:10px;
+}
+.cs-name {
+  font-family:'Unbounded', sans-serif; font-weight:900;
+  font-size:clamp(18px, 2.8vw, 40px); letter-spacing:-.03em;
+  color:var(--text); line-height:1.05; margin-bottom:22px;
+}
+.cs-card:nth-child(3) .cs-name,
+.cs-card:nth-child(4) .cs-name { font-size:clamp(16px, 1.8vw, 22px); }
+
+.cs-stats { display:flex; gap:28px; margin-bottom:24px; flex-wrap:wrap; }
+.cs-stat-val {
+  font-family:'JetBrains Mono', monospace;
+  font-size:20px; color:var(--accent); font-weight:700;
+  display:block; line-height:1;
+}
+.cs-stat-lbl {
+  font-size:8px; text-transform:uppercase;
+  letter-spacing:.14em; color:var(--text2); margin-top:4px;
+}
+.cs-open {
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:10px; font-weight:700; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--text);
+  opacity:0; transform:translateY(10px);
+  transition:opacity .35s ease, transform .35s ease, color .25s ease;
+}
+.cs-card:hover .cs-open { opacity:1; transform:translateY(0); }
+.cs-open:hover { color:var(--accent); }
+.cs-open::after { content:'→'; transition:transform .3s ease; }
+.cs-card:hover .cs-open::after { transform:translateX(5px); }
+
+/* Notion strip */
+.cs-notion {
+  margin-top:36px; padding:20px 26px;
+  border:1px solid var(--border); border-radius:2px;
+  display:flex; align-items:center; justify-content:space-between; gap:20px;
+  background:var(--surface); transition:border-color .3s ease;
+}
+.cs-notion:hover { border-color:rgba(var(--acR),.35); }
+.cs-notion-txt { font-size:13.5px; color:var(--text2); font-weight:300; }
+.cs-notion-txt strong { color:var(--text); font-weight:500; }
+
+/* =============================================
+   WORK BANK — Creative bento grid (TXT 1 inspired)
+============================================= */
+#work-bank {
+  background:var(--surface); border-top:1px solid var(--border);
+}
+
+.wb-tabs {
+  display:flex; gap:0; border-bottom:1px solid var(--border);
+  margin:40px 0 36px; overflow-x:auto; scrollbar-width:none;
+}
+.wb-tabs::-webkit-scrollbar { display:none; }
+.wb-tab {
+  padding:10px 22px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:10px; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--text2); background:transparent;
+  border:none; border-bottom:2px solid transparent;
+  cursor:none; white-space:nowrap;
+  transition:color .25s ease, border-color .25s ease;
+  margin-bottom:-1px;
+}
+.wb-tab:hover { color:var(--text); }
+.wb-tab.on { color:var(--accent); border-bottom-color:var(--accent); }
+
+/* Bento grid — mixed sizes (TXT 1 zoom parallax inspired) */
+.wb-grid {
+  display:grid;
+  grid-template-columns:repeat(12, 1fr);
+  grid-auto-rows:minmax(180px, auto);
+  gap:10px;
+}
+
+.wb-item {
+  background:var(--surf2); border:1px solid var(--border);
+  border-radius:3px; overflow:hidden; cursor:none;
+  display:none; position:relative;
+  animation:wbIn .45s var(--ease) both;
+  transition:border-color .3s ease, box-shadow .35s ease, transform .35s ease;
+}
+.wb-item.show { display:flex; flex-direction:column; }
+@keyframes wbIn {
+  from{opacity:0;transform:scale(0.94);}
+  to{opacity:1;transform:none;}
+}
+.wb-item:hover {
+  border-color:rgba(var(--acR),.4);
+  box-shadow:0 16px 48px rgba(0,0,0,.6);
+  transform:translateY(-4px);
+}
+
+/* Bento size classes */
+.wb-item.w2 { grid-column:span 4; }
+.wb-item.w3 { grid-column:span 6; }
+.wb-item.w4 { grid-column:span 4; }
+/* Default items */
+.wb-item { grid-column:span 4; }
+
+/* Zoom-in on scroll (TXT 1 concept — CSS only) */
+.wb-thumb {
+  flex:1; position:relative; overflow:hidden;
+  background:#060816; min-height:160px;
+}
+.wb-thumb img {
+  width:100%; height:100%; object-fit:cover;
+  transition:transform .6s var(--ease);
+  display:block;
+}
+.wb-item:hover .wb-thumb img { transform:scale(1.08); }
+.wb-thumb-bg {
+  width:100%; height:100%; position:absolute; inset:0;
+  transition:transform .6s var(--ease);
+}
+.wb-item:hover .wb-thumb-bg { transform:scale(1.05); }
+
+.wb-play {
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  width:48px; height:48px;
+  background:var(--accent); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  color:#000; font-size:14px; font-weight:900;
+  transition:transform .3s var(--ease), box-shadow .3s ease;
+}
+.wb-item:hover .wb-play { transform:translate(-50%,-50%) scale(1.15); box-shadow:0 8px 24px rgba(var(--acR),.45); }
+
+.wb-ext {
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  width:48px; height:48px;
+  background:rgba(7,8,28,.65); border:1.5px solid rgba(255,255,255,.2);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:16px; backdrop-filter:blur(6px);
+  transition:all .3s var(--ease);
+}
+.wb-item:hover .wb-ext { background:rgba(var(--acR),.8); border-color:var(--accent); transform:translate(-50%,-50%) scale(1.15); }
+
+.wb-info { padding:14px 16px; background:var(--surf2); border-top:1px solid var(--border); flex-shrink:0; }
+.wb-platform {
+  font-family:'JetBrains Mono', monospace; font-size:9px; font-weight:700;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--accent); margin-bottom:6px;
+}
+.wb-title {
+  font-size:13px; font-weight:600; color:var(--text); line-height:1.4; margin-bottom:6px;
+}
+.wb-meta {
+  font-family:'JetBrains Mono', monospace; font-size:9px; color:var(--text2);
+  display:flex; align-items:center; gap:7px;
+}
+.wb-dot { width:3px; height:3px; border-radius:50%; background:var(--text3); }
+.wb-more { text-align:center; margin-top:48px; }
+
+/* =============================================
+   EXPERIENCE
+============================================= */
+#experience {
+  background:var(--bg); border-top:1px solid var(--border);
+}
+.exp-grid {
+  display:grid; grid-template-columns:1fr 1.7fr; gap:100px;
+}
+.exp-big-name {
+  font-family:'Unbounded', sans-serif; font-weight:900;
+  font-size:clamp(48px, 7.5vw, 96px);
+  line-height:.85; letter-spacing:-.04em; color:var(--text); margin-bottom:20px;
+}
+.exp-badge {
+  display:inline-block;
+  font-family:'JetBrains Mono', monospace; font-size:9px; font-weight:700;
+  letter-spacing:.25em; text-transform:uppercase; color:var(--accent);
+  border:1px solid rgba(var(--acR),.35); padding:7px 16px; border-radius:2px; margin-bottom:36px;
+}
+.contact-links { display:flex; flex-direction:column; gap:12px; }
+.contact-link {
+  display:flex; align-items:center; gap:14px;
+  font-size:13.5px; color:var(--text2); transition:color .25s ease;
+}
+.contact-link:hover { color:var(--accent); }
+.cl-icon {
+  width:34px; height:34px; border:1px solid var(--border2);
+  border-radius:2px; display:flex; align-items:center; justify-content:center;
+  font-size:12px; flex-shrink:0; transition:all .25s ease;
+}
+.contact-link:hover .cl-icon { border-color:var(--accent); background:rgba(var(--acR),.06); }
+
+.timeline { display:flex; flex-direction:column; }
+.tl-item {
+  border-left:2px solid var(--border2); padding:0 0 40px 30px; position:relative;
+  transition:border-color .3s ease;
+}
+.tl-item:last-child { padding-bottom:0; }
+.tl-item::before {
+  content:''; position:absolute; left:-5px; top:4px;
+  width:8px; height:8px; border-radius:50%;
+  background:var(--text3); border:2px solid var(--bg);
+  transition:background .3s ease, box-shadow .3s ease;
+}
+.tl-item:hover { border-color:var(--accent); }
+.tl-item:hover::before { background:var(--accent); box-shadow:0 0 12px rgba(var(--acR),.5); }
+.tl-year {
+  font-family:'JetBrains Mono', monospace; font-size:10px; font-weight:700;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin-bottom:6px;
+}
+.tl-co {
+  font-family:'Unbounded', sans-serif; font-weight:700;
+  font-size:16px; color:var(--text); margin-bottom:4px; letter-spacing:-.02em;
+}
+.tl-role { font-size:12px; color:var(--text2); margin-bottom:10px; letter-spacing:.02em; }
+.tl-desc { font-size:13.5px; color:var(--text2); line-height:1.75; font-weight:300; }
+
+/* =============================================
+   TOOLS
+============================================= */
+#tools { background:var(--surface); border-top:1px solid var(--border); }
+.tools-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:44px; }
+.tool-chip {
+  padding:8px 16px; border:1px solid var(--border2); border-radius:2px;
+  font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:.08em;
+  color:var(--text2); transition:all .25s ease; cursor:default;
+}
+.tool-chip:hover {
+  border-color:var(--accent); color:var(--accent);
+  background:rgba(var(--acR),.06); box-shadow:0 0 16px rgba(var(--acR),.1);
+}
+
+/* =============================================
+   CONTACT
+============================================= */
+#contact {
+  background:var(--bg); border-top:1px solid var(--border);
+  text-align:center; padding:160px 64px 180px;
+  position:relative; overflow:hidden;
+}
+.contact-glow {
+  position:absolute; width:800px; height:800px;
+  background:radial-gradient(circle, rgba(var(--acR),.08) 0%, transparent 65%);
+  top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none;
+}
+.contact-kicker {
+  font-family:'JetBrains Mono', monospace; font-size:10px; font-weight:700;
+  letter-spacing:.3em; text-transform:uppercase; color:var(--accent);
+  display:flex; align-items:center; justify-content:center; gap:14px;
+  margin-bottom:32px; position:relative;
+}
+.contact-kicker::before, .contact-kicker::after { content:''; width:24px; height:1px; background:var(--accent); }
+.contact-hl {
+  font-family:'Unbounded', sans-serif; font-weight:900;
+  font-size:clamp(48px, 10.5vw, 144px);
+  line-height:.88; letter-spacing:-.04em; color:var(--text); margin-bottom:40px; position:relative;
+}
+.contact-hl em { color:var(--accent); font-style:normal; display:block; }
+.contact-sub {
+  font-size:17px; font-weight:300; color:var(--text2);
+  max-width:440px; margin:0 auto 48px; line-height:1.8; position:relative;
+}
+.contact-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; position:relative; }
+.notion-pills {
+  display:flex; flex-wrap:wrap; gap:10px;
+  justify-content:center; margin-top:44px; position:relative;
+}
+.notion-pill {
+  display:inline-flex; align-items:center; gap:8px; padding:11px 20px;
+  border:1px solid var(--border2); border-radius:2px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--text2); transition:all .25s ease;
+}
+.notion-pill:hover { border-color:var(--accent); color:var(--accent); }
+
+/* =============================================
+   FOOTER
+============================================= */
+footer {
+  padding:28px 64px; border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  background:var(--surface);
+}
+.ft-copy { font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text2); letter-spacing:.05em; }
+.ft-links { display:flex; gap:28px; }
+.ft-links a { font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text2); transition:color .25s ease; }
+.ft-links a:hover { color:var(--accent); }
+
+/* =============================================
+   CASE STUDY MODALS
+============================================= */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(4,5,18,.95);
+  backdrop-filter:blur(14px); z-index:50000;
+  display:flex; align-items:flex-start; justify-content:center;
+  padding:40px 20px; overflow-y:auto;
+  opacity:0; visibility:hidden; transition:opacity .4s ease, visibility .4s ease;
+}
+.modal-overlay.open { opacity:1; visibility:visible; }
+.modal {
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:3px; max-width:960px; width:100%;
+  transform:translateY(40px); transition:transform .5s var(--ease); overflow:hidden;
+}
+.modal-overlay.open .modal { transform:none; }
+
+.modal-hero { padding:60px 60px 48px; position:relative; overflow:hidden; }
+.modal-hero-bg { position:absolute; inset:0; opacity:.3; }
+.modal-close {
+  position:absolute; top:24px; right:24px;
+  width:40px; height:40px;
+  background:rgba(255,255,255,.07); border:1px solid var(--border2);
+  border-radius:50%; color:var(--text); font-size:15px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:none; z-index:5; transition:all .25s ease;
+}
+.modal-close:hover { background:rgba(255,255,255,.14); }
+.modal-cat {
+  font-family:'JetBrains Mono', monospace; font-size:10px; font-weight:700;
+  letter-spacing:.22em; text-transform:uppercase; color:var(--accent); margin-bottom:16px; position:relative;
+}
+.modal-title {
+  font-family:'Unbounded', sans-serif; font-weight:900;
+  font-size:clamp(24px, 3.8vw, 48px); letter-spacing:-.03em;
+  color:var(--text); line-height:1.05; margin-bottom:16px; position:relative;
+}
+.modal-tagline {
+  font-family:'Instrument Serif', serif; font-style:italic;
+  font-size:18px; color:var(--text2); line-height:1.6; position:relative;
+}
+
+.modal-stats {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:1px; background:var(--border); border-top:1px solid var(--border);
+}
+.m-stat { background:var(--surf2); padding:22px 18px; text-align:center; }
+.m-stat-num {
+  font-family:'JetBrains Mono', monospace;
+  font-size:clamp(20px, 2.8vw, 32px); font-weight:700;
+  color:var(--accent); display:block; line-height:1;
+}
+.m-stat-lbl {
+  font-size:9px; color:var(--text2); text-transform:uppercase;
+  letter-spacing:.14em; display:block; margin-top:6px;
+}
+
+.modal-body { padding:48px 60px; }
+.m-sec { margin-bottom:48px; }
+.m-sec-title {
+  font-family:'JetBrains Mono', monospace; font-size:10px; font-weight:700;
+  letter-spacing:.24em; text-transform:uppercase; color:var(--accent); margin-bottom:20px;
+  display:flex; align-items:center; gap:14px;
+}
+.m-sec-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.m-text { font-size:15px; font-weight:300; color:var(--text2); line-height:1.85; }
+.m-text strong { color:var(--text); font-weight:500; }
+
+.funnel { display:flex; flex-direction:column; gap:8px; }
+.fn-step {
+  display:flex; gap:18px; align-items:center;
+  padding:14px 18px; border:1px solid var(--border); border-radius:2px;
+  transition:all .25s ease;
+}
+.fn-step:hover { border-color:rgba(var(--acR),.35); background:rgba(var(--acR),.04); }
+.fn-lbl {
+  font-family:'JetBrains Mono', monospace; font-size:9px; font-weight:700;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--accent); width:80px; flex-shrink:0;
+}
+.fn-text { font-size:14px; color:var(--text); }
+
+.insight-box {
+  padding:22px 26px; background:rgba(var(--acR),.05);
+  border:1px solid rgba(var(--acR),.2); border-radius:2px;
+  font-size:15px; line-height:1.75; color:var(--text);
+}
+.insight-box em { color:var(--accent); font-style:normal; font-weight:600; }
+
+.result-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.res-card {
+  padding:20px; background:var(--bg);
+  border:1px solid var(--border); border-radius:2px;
+}
+.res-num {
+  font-family:'JetBrains Mono', monospace; font-size:26px; font-weight:700;
+  color:var(--accent); display:block; line-height:1; margin-bottom:5px;
+}
+.res-lbl { font-size:12px; color:var(--text2); }
+
+.vid-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:12px;
+}
+.vid-frame {
+  aspect-ratio:16/9; border-radius:2px; overflow:hidden; background:#000;
+}
+.vid-frame iframe { width:100%; height:100%; border:none; }
+
+/* Vertical Screenshot Slideshow (TXT 2 FlipReveal concept) */
+.metrics-slideshow {
+  display:flex; gap:12px; overflow-x:auto; padding-bottom:12px; scroll-snap-type:x mandatory;
+  scrollbar-width:thin; scrollbar-color:var(--border2) transparent;
+}
+.metrics-slideshow::-webkit-scrollbar { height:4px; }
+.metrics-slideshow::-webkit-scrollbar-track { background:transparent; }
+.metrics-slideshow::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+.metric-slide {
+  flex-shrink:0; width:240px; scroll-snap-align:start;
+  background:var(--bg); border:1px solid var(--border); border-radius:4px;
+  overflow:hidden; aspect-ratio:9/16;
+  position:relative; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  transition:border-color .3s ease;
+}
+.metric-slide:hover { border-color:rgba(var(--acR),.4); }
+.metric-slide-bg {
+  position:absolute; inset:0; opacity:.18;
+}
+.metric-slide-content {
+  position:relative; z-index:1; text-align:center; padding:24px;
+}
+.ms-platform {
+  font-family:'JetBrains Mono', monospace; font-size:9px; font-weight:700;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--accent); margin-bottom:16px;
+}
+.ms-metric {
+  font-family:'Unbounded', sans-serif; font-weight:900;
+  font-size:clamp(28px, 5vw, 48px); color:var(--text);
+  letter-spacing:-.03em; line-height:1; margin-bottom:8px;
+}
+.ms-label { font-size:12px; color:var(--text2); font-weight:300; }
+.ms-img-placeholder {
+  width:100%; height:100%; object-fit:cover;
+  position:absolute; inset:0;
+}
+.ms-note {
+  position:absolute; bottom:16px; left:0; right:0; text-align:center;
+  font-family:'JetBrains Mono', monospace; font-size:8px; color:rgba(var(--acR),.5);
+  letter-spacing:.15em; text-transform:uppercase;
+}
+
+.modal-cta { text-align:center; padding-top:20px; }
+.modal-cta-row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+/* =============================================
+   VIDEO MODAL
+============================================= */
+#vid-modal {
+  position:fixed; inset:0; background:rgba(4,5,18,.98);
+  z-index:60000; display:flex; align-items:center; justify-content:center;
+  padding:50px 40px; opacity:0; visibility:hidden; transition:all .3s ease;
+}
+#vid-modal.open { opacity:1; visibility:visible; }
+.vid-modal-inner { width:100%; max-width:960px; position:relative; }
+.vid-modal-x {
+  position:absolute; top:-52px; right:0;
+  background:none; border:none;
+  font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700;
+  letter-spacing:.15em; color:var(--text2); cursor:none; padding:8px;
+  transition:color .25s ease; text-transform:uppercase;
+}
+.vid-modal-x:hover { color:var(--accent); }
+.vid-modal-screen { aspect-ratio:16/9; border-radius:3px; overflow:hidden; background:#000; }
+.vid-modal-screen iframe { width:100%; height:100%; border:none; }
+
+/* =============================================
+   RESPONSIVE
+============================================= */
+@media(max-width:1024px) {
+  .about-card { grid-template-columns:1fr; }
+  .about-left { border-right:none; border-bottom:1px solid var(--border); }
+  .cs-grid { grid-template-columns:1fr; }
+  .cs-card:nth-child(1),
+  .cs-card:nth-child(2),
+  .cs-card:nth-child(3),
+  .cs-card:nth-child(4) { grid-column:1; grid-row:auto; min-height:45vh; }
+  .exp-grid { grid-template-columns:1fr; gap:48px; }
+  .hero-bio-wrap { grid-template-columns:1fr; gap:36px; }
+  .wb-grid { grid-template-columns:repeat(6, 1fr); }
+  .wb-item { grid-column:span 3; }
+  .wb-item.w3 { grid-column:span 6; }
+}
+@media(max-width:768px) {
+  nav { padding:20px 24px; }
+  nav.scrolled { padding:14px 24px; }
+  .nav-links { display:none; } .nav-right { display:none; }
+  section { padding:90px 24px; }
+  .hero { padding:110px 24px 70px; }
+  .modal-hero { padding:40px 24px 32px; }
+  .modal-body { padding:32px 24px; }
+  .modal-stats { grid-template-columns:repeat(2,1fr); }
+  .about-left, .about-right { padding:36px 24px; }
+  #contact { padding:100px 24px 120px; }
+  footer { flex-direction:column; gap:16px; text-align:center; }
+  .cs-head { flex-direction:column; gap:16px; }
+  .cs-head-note { text-align:left; }
+  .cs-content { padding:24px 20px; }
+  .hero-name { font-size:clamp(50px, 18vw, 130px); }
+  .wb-grid { grid-template-columns:1fr 1fr; }
+  .wb-item, .wb-item.w2, .wb-item.w3 { grid-column:span 1; }
+  footer { padding:28px 24px; }
+  .perf-shots-grid { grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); }
+  .cd-carousel-slide { width:160px; }
+}
+
+/* =============================================
+   VID FRAME THUMBNAIL COVERS (Modal)
+============================================= */
+.vid-frame { position:relative; }
+.vid-thumb-cover {
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; z-index:2;
+  transition:opacity .3s ease;
+}
+.vid-play-cover {
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  width:52px; height:52px;
+  background:var(--accent); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  color:#000; font-size:16px; font-weight:900;
+  z-index:3; pointer-events:none; text-indent:3px; line-height:1;
+  transition:transform .3s var(--ease), box-shadow .3s ease;
+}
+.vid-clickable { cursor:none; }
+.vid-clickable:hover .vid-play-cover {
+  transform:translate(-50%,-50%) scale(1.13);
+  box-shadow:0 10px 28px rgba(var(--acR),.5);
+}
+.vid-clickable.loaded .vid-thumb-cover,
+.vid-clickable.loaded .vid-play-cover { opacity:0; pointer-events:none; }
+.vid-frame iframe { position:relative; z-index:1; }
+
+/* =============================================
+   PERFORMANCE SCREENSHOTS — Real Instagram Proof
+============================================= */
+.perf-intro {
+  font-size:13px; font-weight:300; color:var(--text2); line-height:1.75;
+  margin-bottom:18px;
+}
+.perf-intro strong { color:var(--accent); font-weight:600; }
+.perf-shots-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(150px,1fr));
+  gap:10px;
+}
+.perf-shot {
+  border-radius:3px; overflow:hidden; border:1px solid var(--border);
+  aspect-ratio:9/16; background:var(--surf2);
+  cursor:zoom-in; position:relative;
+  transition:border-color .3s ease, transform .35s ease, box-shadow .35s ease;
+}
+.perf-shot.wide { aspect-ratio:16/9; grid-column:span 2; }
+.perf-shot:hover {
+  border-color:rgba(var(--acR),.5);
+  transform:translateY(-4px);
+  box-shadow:0 14px 36px rgba(0,0,0,.6);
+}
+.perf-shot img { width:100%; height:100%; object-fit:cover; display:block; }
+
+/* =============================================
+   CD CONTENT SHOWCASE — Work Folder Display
+============================================= */
+.cd-work-section { margin-bottom:36px; }
+.cd-work-label {
+  font-family:'JetBrains Mono', monospace; font-size:9px; font-weight:700;
+  letter-spacing:.22em; text-transform:uppercase; color:var(--text2);
+  margin-bottom:12px; display:flex; align-items:center; gap:12px;
+}
+.cd-work-label::after { content:''; flex:1; height:1px; background:var(--border); }
+.cd-work-scroll {
+  display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:thin; scrollbar-color:var(--border2) transparent;
+}
+.cd-work-scroll::-webkit-scrollbar { height:4px; }
+.cd-work-scroll::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+.cd-work-item {
+  flex-shrink:0; border-radius:3px; overflow:hidden;
+  border:1px solid var(--border); background:var(--bg);
+  scroll-snap-align:start; cursor:zoom-in;
+  transition:border-color .3s ease, transform .35s ease, box-shadow .35s ease;
+}
+.cd-work-item:hover {
+  border-color:rgba(var(--acR),.4);
+  transform:translateY(-3px);
+  box-shadow:0 12px 28px rgba(0,0,0,.5);
+}
+.cd-work-item img { display:block; height:240px; width:auto; object-fit:cover; pointer-events:none; }
+.cd-work-item.sq img { height:200px; width:200px; }
+.cd-work-item.ld img { height:180px; width:320px; }
+
+/* =============================================
+   CD CAROUSEL — Tinder x Colleges Viral Post
+============================================= */
+.cd-carousel-wrap {
+  border:1px solid var(--border2); border-radius:3px; overflow:hidden;
+  background:linear-gradient(135deg,#080A1E,var(--surface));
+}
+.cd-carousel-header {
+  padding:22px 24px 0;
+  display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+}
+.cd-carousel-meta {}
+.cd-carousel-label-text {
+  font-family:'JetBrains Mono', monospace; font-size:9px; font-weight:700;
+  letter-spacing:.22em; text-transform:uppercase; color:var(--accent);
+  margin-bottom:6px;
+}
+.cd-carousel-desc {
+  font-size:12px; color:var(--text2); font-weight:300; line-height:1.65;
+  max-width:320px;
+}
+.cd-carousel-desc strong { color:var(--text); font-weight:500; }
+.cd-carousel-count {
+  font-family:'JetBrains Mono', monospace; font-size:11px;
+  color:var(--text2); flex-shrink:0; margin-top:2px;
+}
+.cd-carousel-count span { color:var(--accent); font-weight:700; }
+.cd-carousel-viewport {
+  overflow:hidden; padding:16px 24px 4px; user-select:none;
+  cursor:grab;
+}
+.cd-carousel-viewport:active { cursor:grabbing; }
+.cd-carousel-track {
+  display:flex; gap:12px;
+  transition:transform .45s cubic-bezier(0.16,1,0.3,1);
+  will-change:transform;
+}
+.cd-carousel-track.dragging { transition:none; }
+.cd-carousel-slide {
+  flex-shrink:0; width:200px;
+  border-radius:2px; overflow:hidden; border:1px solid var(--border);
+  transition:border-color .3s ease;
+}
+.cd-carousel-slide:hover { border-color:rgba(var(--acR),.4); }
+.cd-carousel-slide img {
+  width:100%; aspect-ratio:4/5; object-fit:cover; display:block; pointer-events:none;
+}
+.cd-carousel-footer {
+  padding:14px 24px 22px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.cd-carousel-dots { display:flex; gap:6px; align-items:center; }
+.cd-carousel-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--text3); border:none; padding:0; cursor:none;
+  transition:background .25s ease, transform .2s ease, width .25s ease;
+}
+.cd-carousel-dot.on { background:var(--accent); transform:scale(1.3); }
+.cd-carousel-nav { display:flex; gap:8px; }
+.cd-carousel-btn {
+  width:36px; height:36px;
+  background:var(--surf2); border:1px solid var(--border2);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  color:var(--text); font-size:14px; cursor:none;
+  transition:all .25s ease;
+}
+.cd-carousel-btn:hover:not(:disabled) {
+  background:var(--accent); border-color:var(--accent); color:#000;
+}
+.cd-carousel-btn:disabled { opacity:0.28; }
+.cd-viral-tag {
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:'JetBrains Mono', monospace; font-size:9px; font-weight:700;
+  letter-spacing:.2em; text-transform:uppercase;
+  color:var(--accent); border:1px solid rgba(var(--acR),.25);
+  padding:6px 14px; border-radius:2px; background:rgba(var(--acR),.05);
+  margin:0 24px 22px;
+}
+
+/* =============================================
+   WORK BANK — Enhanced Float-In Animation
+============================================= */
+@keyframes wbFloatIn {
+  from { opacity:0; transform:translateY(28px) scale(0.95); }
+  to   { opacity:1; transform:none; }
+}
+.wb-item.show {
+  animation:wbFloatIn .55s var(--ease) both;
+}
+.wb-item.show:hover {
+  border-color:rgba(var(--acR),.4);
+  box-shadow:0 16px 48px rgba(0,0,0,.6);
+  transform:translateY(-4px) !important;
+}
+/* Instagram thumbnail items — richer visual */
+.wb-thumb-ig {
+  width:100%; height:100%; position:absolute; inset:0;
+  object-fit:cover; transition:transform .6s var(--ease);
+}
+.wb-item:hover .wb-thumb-ig { transform:scale(1.06); }
+</style>
+</head>
+<body>
+
+<div id="c-dot"></div>
+<div id="c-ring"></div>
+<div id="s-prog"></div>
+
+<!-- =============================================
+     LOADER — LetterGlitch (TXT 4 concept adapted)
+============================================= -->
+<div id="loader">
+  <canvas id="glitch-canvas"></canvas>
+  <div class="ld-content">
+    <div class="ld-system">// Portfolio System Loading</div>
+    <div class="ld-name">SWAPNIL<em>TRIPATHI</em></div>
+    <div class="ld-status" id="ld-status">Initializing...</div>
+    <div class="ld-progress-bar" id="ld-pbar">
+      <span class="filled">░░░░░░░░░░░░░░░░░░░░</span>
+      <span class="ld-pct">0%</span>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo"><div class="nav-avail-dot"></div>ST</a>
+  <ul class="nav-links">
+    <li><a href="#case-studies">Work</a></li>
+    <li><a href="#work-bank">Creative</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact" class="nav-cta">Let's Talk</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-avail-dot"></div>
+    Available for Projects
+  </div>
+</nav>
+
+<!-- =============================================
+     HERO — WebGL Shader Background (TXT 3)
+============================================= -->
+<section class="hero" id="home">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-overlay"></div>
+
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>
+      Performance Marketer · Growth Architect · Creative Director
+    </div>
+
+    <h1 class="hero-name">
+      <span class="n1 glitch" data-text="SWAPNIL">SWAPNIL</span>
+      <span class="n2 glitch" data-text="TRIPATHI">TRIPATHI</span>
+    </h1>
+
+    <div class="hero-bio-wrap">
+      <div class="hero-bio">
+        <div class="hero-bio-line"></div>
+        <p>
+          Most marketers buy eyeballs. <strong>I build the engine underneath.</strong>
+          In 4 months, I took an EV startup from zero funnel to 143 monthly sales.
+          In 4 years, I made an EdTech brand reach <strong>100 million people</strong> without doubling the budget.
+          I don't just run campaigns — I design systems that compound.
+        </p>
+        <div class="hero-btns">
+          <a href="#case-studies" class="btn-primary">View Case Studies →</a>
+          <a href="#contact" class="btn-secondary">Let's Talk ↗</a>
+        </div>
+      </div>
+
+      <div class="hero-metrics">
+        <div class="h-metric">
+          <span class="h-metric-val" data-count="70" data-suffix="%">0%</span>
+          <span class="h-metric-lbl">CPL Reduction</span>
+        </div>
+        <div class="h-metric">
+          <span class="h-metric-val" data-count="100" data-suffix="M+">0M+</span>
+          <span class="h-metric-lbl">Views Generated</span>
+        </div>
+        <div class="h-metric">
+          <span class="h-metric-val" data-count="639" data-suffix="">0</span>
+          <span class="h-metric-lbl">EV Conversions</span>
+        </div>
+        <div class="h-metric">
+          <span class="h-metric-val" data-count="5" data-suffix="+">0+</span>
+          <span class="h-metric-lbl">Years Experience</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-row">
+    <div class="ticker-track">
+      <span class="t-item hi">70% CPL Reduction<span class="t-sep"></span></span>
+      <span class="t-item">100M+ Views Generated<span class="t-sep"></span></span>
+      <span class="t-item hi">639 EV Conversions via WhatsApp<span class="t-sep"></span></span>
+      <span class="t-item">55% CAC Reduction in 60 Days<span class="t-sep"></span></span>
+      <span class="t-item hi">180K+ YouTube Subscribers<span class="t-sep"></span></span>
+      <span class="t-item">300% Social Growth<span class="t-sep"></span></span>
+      <span class="t-item hi">₹1.5Cr+ Ad Spend Managed Quarterly<span class="t-sep"></span></span>
+      <span class="t-item">5+ Years Performance Marketing<span class="t-sep"></span></span>
+      <!-- duplicate -->
+      <span class="t-item hi">70% CPL Reduction<span class="t-sep"></span></span>
+      <span class="t-item">100M+ Views Generated<span class="t-sep"></span></span>
+      <span class="t-item hi">639 EV Conversions via WhatsApp<span class="t-sep"></span></span>
+      <span class="t-item">55% CAC Reduction in 60 Days<span class="t-sep"></span></span>
+      <span class="t-item hi">180K+ YouTube Subscribers<span class="t-sep"></span></span>
+      <span class="t-item">300% Social Growth<span class="t-sep"></span></span>
+      <span class="t-item hi">₹1.5Cr+ Ad Spend Managed Quarterly<span class="t-sep"></span></span>
+      <span class="t-item">5+ Years Performance Marketing<span class="t-sep"></span></span>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================
+     ABOUT — "Systems Thinker. Execution Machine."
+============================================= -->
+<section id="about">
+  <div class="about-wm">SYSTEMS</div>
+
+  <div class="about-headline rv">
+    <div class="s-label">The Mind Behind the Metrics</div>
+    <div class="about-hl-main">Systems Thinker.</div>
+    <div class="about-hl-sub">Execution Machine.</div>
+  </div>
+
+  <div class="about-3d-wrap rv d1">
+    <div id="about-card-3d">
+      <div class="about-card">
+        <div class="about-left">
+          <div class="about-quote">
+            "The gap between a marketer and a growth architect is the funnel. I build funnels."
+          </div>
+          <div class="about-narrative">
+            <p>
+              5 years ago I walked into Collegedunia and built a social media operation from scratch —
+              three YouTube channels, 100M+ Meta Reels views, and <em>70% CPL reduction</em> across the board.
+              Then I joined an EV startup with zero digital presence.
+            </p>
+            <p>
+              I reverse-engineered the acquisition problem, architected a full-funnel WhatsApp CRM engine,
+              and drove <em>639 conversions at ₹4.8K CAC</em> — nearly half the blended digital average.
+              <strong>The pattern? I don't just market. I design systems that do the marketing for me.</strong>
+            </p>
+          </div>
+        </div>
+        <div class="about-right">
+          <div class="cap-grid">
+            <div class="cap-item rv"><span class="cap-icon">📊</span><span class="cap-text">Paid Media &amp; Performance Marketing</span></div>
+            <div class="cap-item rv d1"><span class="cap-icon">🎯</span><span class="cap-text">Full-Funnel Strategy &amp; User Acquisition</span></div>
+            <div class="cap-item rv d2"><span class="cap-icon">🎬</span><span class="cap-text">Creative Production &amp; Video Content</span></div>
+            <div class="cap-item rv d3"><span class="cap-icon">🤝</span><span class="cap-text">Influencer Marketing &amp; Creator Campaigns</span></div>
+            <div class="cap-item rv d4"><span class="cap-icon">⚙️</span><span class="cap-text">CRM Automation (WhatsApp, HubSpot, Zapier)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================
+     CASE STUDIES — Collegedunia FIRST
+============================================= -->
+<section id="case-studies">
+  <div class="cs-head rv">
+    <div>
+      <div class="s-label">Proof of Work</div>
+      <h2 class="s-title">Case Studies</h2>
+    </div>
+    <p class="cs-head-note">Real campaigns.<br>Real metrics.<br>Full-funnel thinking in action.</p>
+  </div>
+
+  <div class="cs-grid rv">
+
+    <!-- 01: COLLEGEDUNIA — Featured full width (4 years) -->
+    <div class="cs-card" onclick="openCSModal('m-cd')">
+      <div class="cs-bg" style="background:radial-gradient(ellipse 70% 90% at 80% 40%, rgba(37,99,235,.22) 0%, transparent 65%), linear-gradient(150deg,#060A1F,#070818 55%,#04040C 100%);"></div>
+      <div class="cs-brand-wm"><span class="cs-brand-text" style="color:#2563EB;">CD</span></div>
+      <!-- Collegedunia styled logo badge -->
+      <div class="cs-logo-badge" style="background:rgba(37,99,235,.15);border:1px solid rgba(37,99,235,.4);color:#60A5FA;">
+        <span style="font-size:11px;">collegedunia.com</span>
+      </div>
+      <div class="cs-tag">Featured · 4 Years</div>
+      <div class="cs-content">
+        <div class="cs-cat">Meta · YouTube · Brand + Performance · Multi-Channel</div>
+        <h3 class="cs-name">Collegedunia<br>Social Media Pivot</h3>
+        <div class="cs-stats">
+          <div><span class="cs-stat-val">300%</span><div class="cs-stat-lbl">Social Growth</div></div>
+          <div><span class="cs-stat-val">100M+</span><div class="cs-stat-lbl">Reel Views</div></div>
+          <div><span class="cs-stat-val">70%</span><div class="cs-stat-lbl">CPL Down</div></div>
+          <div><span class="cs-stat-val">35%</span><div class="cs-stat-lbl">Brand Uplift</div></div>
+        </div>
+        <div class="cs-open">Read Full Case Study</div>
+      </div>
+    </div>
+
+    <!-- 02: GREVOL — Left tall -->
+    <div class="cs-card" onclick="openCSModal('m-grevol')">
+      <div class="cs-bg" style="background:radial-gradient(ellipse 70% 90% at 75% 35%, rgba(27,138,144,.22) 0%, transparent 65%), linear-gradient(150deg,#061512,#070909 55%,#040808 100%);"></div>
+      <div class="cs-brand-wm"><span class="cs-brand-text" style="color:#1B8A90;">GR</span></div>
+      <!-- Grevol logo badge — teal to match brand -->
+      <div class="cs-logo-badge" style="background:rgba(27,138,144,.15);border:1px solid rgba(27,138,144,.4);color:#22D3EE;">
+        <span style="font-family:'Unbounded',sans-serif;font-size:11px;letter-spacing:.12em;">GREVOL ⚡</span>
+      </div>
+      <div class="cs-tag">EV Growth Engine</div>
+      <div class="cs-content">
+        <div class="cs-cat">EV · Full-Funnel · Performance · CRM</div>
+        <h3 class="cs-name">The EV Growth Engine<br>— Grevol / ALT Mobility</h3>
+        <div class="cs-stats">
+          <div><span class="cs-stat-val">80→143</span><div class="cs-stat-lbl">Monthly Sales</div></div>
+          <div><span class="cs-stat-val">55%</span><div class="cs-stat-lbl">CAC Reduction</div></div>
+          <div><span class="cs-stat-val">639</span><div class="cs-stat-lbl">Conversions</div></div>
+          <div><span class="cs-stat-val">₹4.8K</span><div class="cs-stat-lbl">WhatsApp CAC</div></div>
+        </div>
+        <div class="cs-open">Read Case Study</div>
+      </div>
+    </div>
+
+    <!-- 03: STUDY ABROAD — Right top -->
+    <div class="cs-card" onclick="openCSModal('m-studyabroad')">
+      <div class="cs-bg" style="background:radial-gradient(ellipse 70% 90% at 25% 65%, rgba(234,88,12,.18) 0%, transparent 60%), linear-gradient(150deg,#150E04,#0C0C0C 60%,#040404 100%);"></div>
+      <div class="cs-tag">SEO First · Student-Led</div>
+      <div class="cs-logo-badge" style="background:rgba(37,99,235,.12);border:1px solid rgba(37,99,235,.3);color:#93C5FD;font-size:9px;">
+        collegedunia study abroad
+      </div>
+      <div class="cs-content">
+        <div class="cs-cat">YouTube · SEO · Organic Growth</div>
+        <h3 class="cs-name">0→20K YouTube<br>Growth Engine</h3>
+        <div class="cs-stats">
+          <div><span class="cs-stat-val">20K+</span><div class="cs-stat-lbl">Subscribers</div></div>
+          <div><span class="cs-stat-val">2.6M+</span><div class="cs-stat-lbl">Views</div></div>
+        </div>
+        <div class="cs-open">Read Case Study</div>
+      </div>
+    </div>
+
+    <!-- 04: UPSC — Right bottom -->
+    <div class="cs-card" onclick="openCSModal('m-upsc')">
+      <div class="cs-bg" style="background:radial-gradient(ellipse 70% 90% at 65% 30%, rgba(99,102,241,.18) 0%, transparent 60%), linear-gradient(150deg,#060816,#0C0C0C 55%,#060606 100%);"></div>
+      <div class="cs-tag">Educator Led · Influencer Heavy</div>
+      <!-- Prepp IAS logo badge -->
+      <div class="cs-logo-badge" style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.35);color:#93C5FD;font-size:9px;">
+        <span style="font-family:'Unbounded',sans-serif;font-weight:900;color:#60A5FA;">Prepp</span> IAS
+      </div>
+      <div class="cs-content">
+        <div class="cs-cat">YouTube · Authority · Influencer</div>
+        <h3 class="cs-name">UPSC Scale-Up<br>— Prepp IAS</h3>
+        <div class="cs-stats">
+          <div><span class="cs-stat-val">50K→180K</span><div class="cs-stat-lbl">Subscribers</div></div>
+          <div><span class="cs-stat-val">3.6×</span><div class="cs-stat-lbl">Growth</div></div>
+        </div>
+        <div class="cs-open">Read Case Study</div>
+      </div>
+    </div>
+  </div>
+
+  <a href="https://www.notion.so/Performance-Backed-Case-Studies-3337df8f17bf81c29b60c1701111fdb0"
+     target="_blank" rel="noopener" class="cs-notion rv" style="display:flex;text-decoration:none;margin-top:36px;">
+    <div class="cs-notion-txt">
+      <strong>Full Performance Case Study Deck</strong> — Deep-dive metrics &amp; strategy on Notion.
+    </div>
+    <span class="btn-secondary" style="white-space:nowrap;font-size:10px;padding:10px 22px;">View on Notion ↗</span>
+  </a>
+</section>
+
+<!-- =============================================
+     WORK BANK — Bento Creative Grid
+============================================= -->
+<section id="work-bank">
+  <div class="s-label rv">Creative Work</div>
+  <h2 class="s-title rv">Work Bank</h2>
+  <p style="font-size:16px;font-weight:300;color:var(--text2);margin-top:12px;max-width:480px;line-height:1.8;" class="rv">Brand films to viral UGC — concept, scripting, direction &amp; execution across every channel.</p>
+
+  <div class="wb-tabs rv" id="wbTabs">
+    <button class="wb-tab on" onclick="setTab(this,'all')">All</button>
+    <button class="wb-tab" onclick="setTab(this,'brand')">Brand Films</button>
+    <button class="wb-tab" onclick="setTab(this,'meta')">Meta Ads</button>
+    <button class="wb-tab" onclick="setTab(this,'yt')">YouTube</button>
+    <button class="wb-tab" onclick="setTab(this,'ugc')">Viral UGC</button>
+    <button class="wb-tab" onclick="setTab(this,'inf')">Influencer</button>
+    <button class="wb-tab" onclick="setTab(this,'event')">Events</button>
+  </div>
+
+  <div class="wb-grid rv" id="wbGrid">
+
+    <!-- BRAND FILMS — Vimeo with vumbnail thumbnails -->
+    <div class="wb-item w3" data-cat="brand" onclick="openVidModal('https://player.vimeo.com/video/1175449697?autoplay=1')">
+      <div class="wb-thumb">
+        <img src="https://vumbnail.com/1175449697.jpg" alt="Grevol Launch Film" loading="lazy"
+             onerror="this.style.display='none';">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#061512,#0C0C0C);display:none;"></div>
+        <div class="wb-play">▶</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">Vimeo · Brand Film · Featured</div>
+        <div class="wb-title">The Love Affair Between EV and Delhi — Grevol Launch</div>
+        <div class="wb-meta"><span>Direction &amp; Execution</span><span class="wb-dot"></span><span>2025</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="brand" onclick="openVidModal('https://player.vimeo.com/video/1175449478?autoplay=1')">
+      <div class="wb-thumb">
+        <img src="https://vumbnail.com/1175449478.jpg" alt="Grevol Brand Story 2" loading="lazy" onerror="this.style.display='none';">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#1A0D05,#0C0C0C);display:none;"></div>
+        <div class="wb-play">▶</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">Vimeo · Brand Film</div>
+        <div class="wb-title">Grevol — EV Brand Story #2</div>
+        <div class="wb-meta"><span>Brand Film</span><span class="wb-dot"></span><span>2025</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="brand" onclick="openVidModal('https://player.vimeo.com/video/1175449537?autoplay=1')">
+      <div class="wb-thumb">
+        <img src="https://vumbnail.com/1175449537.jpg" alt="Grevol Brand Story 3" loading="lazy" onerror="this.style.display='none';">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#0A1520,#0C0C0C);display:none;"></div>
+        <div class="wb-play">▶</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">Vimeo · Brand Film</div>
+        <div class="wb-title">Grevol — EV Brand Story #3</div>
+        <div class="wb-meta"><span>Brand Film</span><span class="wb-dot"></span><span>2025</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="brand" onclick="openVidModal('https://player.vimeo.com/video/1175449595?autoplay=1')">
+      <div class="wb-thumb">
+        <img src="https://vumbnail.com/1175449595.jpg" alt="Grevol Brand Story 4" loading="lazy" onerror="this.style.display='none';">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#1A1505,#0C0C0C);display:none;"></div>
+        <div class="wb-play">▶</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">Vimeo · Brand Film</div>
+        <div class="wb-title">Grevol — EV Brand Story #4</div>
+        <div class="wb-meta"><span>Brand Film</span><span class="wb-dot"></span><span>2025</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="brand" onclick="openVidModal('https://player.vimeo.com/video/1175449643?autoplay=1')">
+      <div class="wb-thumb">
+        <img src="https://vumbnail.com/1175449643.jpg" alt="Grevol Brand Story 5" loading="lazy" onerror="this.style.display='none';">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#15080A,#0C0C0C);display:none;"></div>
+        <div class="wb-play">▶</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">Vimeo · Brand Film</div>
+        <div class="wb-title">Grevol — EV Brand Story #5</div>
+        <div class="wb-meta"><span>Brand Film</span><span class="wb-dot"></span><span>2025</span></div>
+      </div>
+    </div>
+
+    <!-- YOUTUBE -->
+    <div class="wb-item w3" data-cat="yt" onclick="openVidModal('https://www.youtube.com/embed/09IFqjztprw?autoplay=1')">
+      <div class="wb-thumb">
+        <img src="https://img.youtube.com/vi/09IFqjztprw/hqdefault.jpg" alt="8 Steps Up" loading="lazy">
+        <div class="wb-play">▶</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">YouTube · Brand Film · Featured</div>
+        <div class="wb-title">8 Steps Up — Collegedunia Achievement Film</div>
+        <div class="wb-meta"><span>Full Production</span><span class="wb-dot"></span><span>Collegedunia</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="yt" onclick="openVidModal('https://www.youtube.com/embed/qSOad7miWJA?autoplay=1')">
+      <div class="wb-thumb">
+        <img src="https://img.youtube.com/vi/qSOad7miWJA/hqdefault.jpg" alt="Theater Ad" loading="lazy">
+        <div class="wb-play">▶</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">YouTube · Theater Ad</div>
+        <div class="wb-title">Theater Ad — Concept, Script &amp; Direction</div>
+        <div class="wb-meta"><span>Full Production</span><span class="wb-dot"></span><span>Collegedunia</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="yt" onclick="openVidModal('https://www.youtube.com/embed/pBDPyhrGKy8?autoplay=1')">
+      <div class="wb-thumb">
+        <img src="https://img.youtube.com/vi/pBDPyhrGKy8/hqdefault.jpg" alt="Brand Film" loading="lazy">
+        <div class="wb-play">▶</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">YouTube · Brand Film</div>
+        <div class="wb-title">Promotional Brand Film — Collegedunia</div>
+        <div class="wb-meta"><span>Full Production</span><span class="wb-dot"></span><span>Collegedunia</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="yt" onclick="openVidModal('https://www.youtube.com/embed/eVC1nyY3n_Y?autoplay=1')">
+      <div class="wb-thumb">
+        <img src="https://img.youtube.com/vi/eVC1nyY3n_Y/hqdefault.jpg" alt="Achievement Film" loading="lazy">
+        <div class="wb-play">▶</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">YouTube · Promo Film</div>
+        <div class="wb-title">Collegedunia — Achievement &amp; Awards Film</div>
+        <div class="wb-meta"><span>Concept &amp; Direction</span><span class="wb-dot"></span><span>Collegedunia</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="yt" onclick="openVidModal('https://www.youtube.com/embed/TcuYNLE39tE?autoplay=1')">
+      <div class="wb-thumb">
+        <img src="https://img.youtube.com/vi/TcuYNLE39tE/hqdefault.jpg" alt="Study Abroad" loading="lazy">
+        <div class="wb-play">▶</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">YouTube · Long Form</div>
+        <div class="wb-title">Study Abroad Channel — 2.6M+ Views</div>
+        <div class="wb-meta"><span>Content Strategy</span><span class="wb-dot"></span><span>20K+ Subs</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="yt" onclick="openVidModal('https://www.youtube.com/embed/z1IRiDbJYxU?autoplay=1')">
+      <div class="wb-thumb">
+        <img src="https://img.youtube.com/vi/z1IRiDbJYxU/hqdefault.jpg" alt="MBA Channel" loading="lazy">
+        <div class="wb-play">▶</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">YouTube · MBA Channel</div>
+        <div class="wb-title">Collegedunia MBA — Niche Channel Build</div>
+        <div class="wb-meta"><span>0→11K Subs</span><span class="wb-dot"></span><span>Search-Led</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="yt" onclick="openVidModal('https://www.youtube.com/embed/tTXjDSSEnhM?autoplay=1')">
+      <div class="wb-thumb">
+        <img src="https://img.youtube.com/vi/tTXjDSSEnhM/hqdefault.jpg" alt="Brand Campaign" loading="lazy">
+        <div class="wb-play">▶</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">YouTube · Brand Film</div>
+        <div class="wb-title">Collegedunia — Brand Campaign Film</div>
+        <div class="wb-meta"><span>Concept &amp; Direction</span><span class="wb-dot"></span><span>Collegedunia</span></div>
+      </div>
+    </div>
+
+    <!-- META ADS -->
+    <div class="wb-item" data-cat="meta" onclick="window.open('https://www.instagram.com/reel/Czq70SArzWJ/','_blank')">
+      <div class="wb-thumb">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#833AB4,#FD1D1D,#FCAF45);"></div>
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">Instagram · Meta Ad Reel</div>
+        <div class="wb-title">EdTech Performance Ad — Full Execution</div>
+        <div class="wb-meta"><span>Meta Ads</span><span class="wb-dot"></span><span>Collegedunia</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="meta" onclick="window.open('https://www.instagram.com/reel/CuErV95gXSm/','_blank')">
+      <div class="wb-thumb">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#5851DB,#833AB4,#C13584);"></div>
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">Instagram · Meta Ad Reel</div>
+        <div class="wb-title">Performance Reel Ad — Scripted &amp; Directed</div>
+        <div class="wb-meta"><span>Meta Ads</span><span class="wb-dot"></span><span>Collegedunia</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="meta" onclick="window.open('https://www.instagram.com/reel/DEzcJ69S_ly/','_blank')">
+      <div class="wb-thumb">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#F77737,#C13584,#833AB4);"></div>
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">Instagram · Meta Ad Reel</div>
+        <div class="wb-title">Meta Performance Ad — Full-Funnel Creative</div>
+        <div class="wb-meta"><span>Meta Ads</span><span class="wb-dot"></span><span>Collegedunia</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="meta" onclick="window.open('https://www.instagram.com/reel/DMfPjg8BMF9/','_blank')">
+      <div class="wb-thumb">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#FCAF45,#FD1D1D,#833AB4);"></div>
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">Instagram · Meta Ad Reel</div>
+        <div class="wb-title">Meta Ad Creative — Concept to Execution</div>
+        <div class="wb-meta"><span>Meta Ads</span><span class="wb-dot"></span><span>100M+ Views Campaign</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="meta" onclick="window.open('https://www.instagram.com/reel/Cx8RteERdxr/','_blank')">
+      <div class="wb-thumb">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#C13584,#FCAF45,#5851DB);"></div>
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">Instagram · Meta Ad Reel</div>
+        <div class="wb-title">EdTech Reel Ad — Script &amp; Direction</div>
+        <div class="wb-meta"><span>Meta Ads</span><span class="wb-dot"></span><span>Collegedunia</span></div>
+      </div>
+    </div>
+
+    <div class="wb-item" data-cat="meta" onclick="window.open('https://www.instagram.com/reel/DE7jB1myCOV/','_blank')">
+      <div class="wb-thumb">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#FD1D1D,#FCAF45,#C13584);"></div>
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info">
+        <div class="wb-platform">Instagram · Meta Ad Reel</div>
+        <div class="wb-title">Conversion Reel — Bottom Funnel Ad</div>
+        <div class="wb-meta"><span>Meta Ads</span><span class="wb-dot"></span><span>Collegedunia</span></div>
+      </div>
+    </div>
+
+    <!-- VIRAL UGC — with meme-moment thumbnails -->
+    <div class="wb-item" data-cat="ugc" onclick="window.open('https://www.instagram.com/reel/Cu9d2tCA7li/','_blank')">
+      <div class="wb-thumb" style="position:relative;">
+        <img src="assets/cd-meme/1.png" class="wb-thumb-ig" alt="UGC Reel — Deadpool Moment Marketing">
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info"><div class="wb-platform">Instagram · Viral UGC</div><div class="wb-title">UGC Reel — Concept, Script &amp; Direction</div><div class="wb-meta"><span>UGC Series</span><span class="wb-dot"></span><span>100M+ Views</span></div></div>
+    </div>
+    <div class="wb-item" data-cat="ugc" onclick="window.open('https://www.instagram.com/reel/CwAcZplgvJZ/','_blank')">
+      <div class="wb-thumb" style="position:relative;">
+        <img src="assets/cd-meme/2.png" class="wb-thumb-ig" alt="Campus UGC — Student Format">
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info"><div class="wb-platform">Instagram · Viral UGC</div><div class="wb-title">Campus UGC — Student Testimonial Format</div><div class="wb-meta"><span>Organic</span><span class="wb-dot"></span><span>Viral</span></div></div>
+    </div>
+    <div class="wb-item" data-cat="ugc" onclick="window.open('https://www.instagram.com/reel/C8zHMiNyGGl/','_blank')">
+      <div class="wb-thumb" style="position:relative;">
+        <img src="assets/cd-meme/3.png" class="wb-thumb-ig" alt="UGC Content Series">
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info"><div class="wb-platform">Instagram · Viral UGC</div><div class="wb-title">UGC Content Series — Scripted Student Stories</div><div class="wb-meta"><span>UGC Series</span><span class="wb-dot"></span><span>Viral</span></div></div>
+    </div>
+    <div class="wb-item" data-cat="ugc" onclick="window.open('https://www.instagram.com/reel/CzEbeYVICb-/','_blank')">
+      <div class="wb-thumb" style="position:relative;">
+        <img src="assets/cd-meme/4.png" class="wb-thumb-ig" alt="Trend-Led UGC — Moment Marketing">
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info"><div class="wb-platform">Instagram · Viral UGC</div><div class="wb-title">Trend-Led UGC Reel — Moment Marketing</div><div class="wb-meta"><span>UGC</span><span class="wb-dot"></span><span>Collegedunia</span></div></div>
+    </div>
+
+    <!-- INFLUENCER — with review post thumbnails -->
+    <div class="wb-item" data-cat="inf" onclick="window.open('https://www.instagram.com/reel/C3S9rE5pPDa/','_blank')">
+      <div class="wb-thumb" style="position:relative;">
+        <img src="assets/cd-review/1.png" class="wb-thumb-ig" alt="Creator Partnership">
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info"><div class="wb-platform">Instagram · Influencer Collab</div><div class="wb-title">Creator Partnership — 5M+ Reach Campaign</div><div class="wb-meta"><span>30+ Campaigns</span><span class="wb-dot"></span><span>10K+ Leads</span></div></div>
+    </div>
+    <div class="wb-item" data-cat="inf" onclick="window.open('https://www.instagram.com/reel/C6oAzELS5-x/','_blank')">
+      <div class="wb-thumb" style="position:relative;">
+        <img src="assets/cd-review/2.png" class="wb-thumb-ig" alt="Influencer Strategy">
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info"><div class="wb-platform">Instagram · Influencer Collab</div><div class="wb-title">Influencer Strategy — Education Niche</div><div class="wb-meta"><span>Creator Strategy</span><span class="wb-dot"></span><span>Collegedunia</span></div></div>
+    </div>
+    <div class="wb-item" data-cat="inf" onclick="window.open('https://www.instagram.com/reel/DIgk1THJaqm/','_blank')">
+      <div class="wb-thumb" style="position:relative;">
+        <img src="assets/cd-meme/5.png" class="wb-thumb-ig" alt="Campus Ambassador Campaign">
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info"><div class="wb-platform">Instagram · Influencer Collab</div><div class="wb-title">Campus Ambassador Campaign — 50+ Colleges</div><div class="wb-meta"><span>25K+ Sign-ups</span><span class="wb-dot"></span><span>Collegedunia</span></div></div>
+    </div>
+
+    <!-- EVENTS — with meta performance screenshot thumbnails -->
+    <div class="wb-item" data-cat="event" onclick="window.open('https://www.instagram.com/reel/DIJYI3ezJFw/','_blank')">
+      <div class="wb-thumb" style="position:relative;">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#1A1505,#0D0D0D);"></div>
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info"><div class="wb-platform">Instagram · Event Promo</div><div class="wb-title">India's Biggest Education Fair — Pragati Maidan</div><div class="wb-meta"><span>Event</span><span class="wb-dot"></span><span>100+ Colleges</span></div></div>
+    </div>
+    <div class="wb-item" data-cat="event" onclick="window.open('https://www.instagram.com/reel/C4SWvTyRTXr/','_blank')">
+      <div class="wb-thumb" style="position:relative;">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#050A1A,#0D0D0D);"></div>
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info"><div class="wb-platform">Instagram · Event Promo</div><div class="wb-title">Education Fair Promo — Multi-Creative Series</div><div class="wb-meta"><span>Performance + Content</span><span class="wb-dot"></span><span>Collegedunia</span></div></div>
+    </div>
+    <div class="wb-item" data-cat="event" onclick="window.open('https://www.instagram.com/reel/DJrMpA4NHQk/','_blank')">
+      <div class="wb-thumb" style="position:relative;">
+        <div class="wb-thumb-bg" style="background:linear-gradient(135deg,#100A1A,#0D0D0D);"></div>
+        <div class="wb-ext">↗</div>
+      </div>
+      <div class="wb-info"><div class="wb-platform">Instagram · Radio Ad</div><div class="wb-title">Radio Ad — Concept, Script &amp; Direction</div><div class="wb-meta"><span>Multi-Channel</span><span class="wb-dot"></span><span>Collegedunia</span></div></div>
+    </div>
+
+  </div>
+  <div class="wb-more rv">
+    <a href="https://www.notion.so/All-Creative-Video-Links-Master-Index-3337df8f17bf816ab0a5dc3c59ae806e"
+       target="_blank" rel="noopener" class="btn-secondary">View Full Creative Index on Notion ↗</a>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="exp-grid">
+    <div class="rv">
+      <div class="exp-big-name">SWAP<br>NIL<br>TRI<br>PATHI</div>
+      <div class="exp-badge">Growth Systems Architect</div>
+      <div class="contact-links">
+        <a href="mailto:swapnilpatch@gmail.com" class="contact-link"><div class="cl-icon">✉</div>swapnilpatch@gmail.com</a>
+        <a href="tel:+919129598222" class="contact-link"><div class="cl-icon">☎</div>+91 91295 98222</a>
+        <span class="contact-link"><div class="cl-icon">📍</div>Gurugram, Haryana</span>
+        <a href="https://www.notion.so/Performance-Backed-Case-Studies-3337df8f17bf81c29b60c1701111fdb0" target="_blank" rel="noopener" class="contact-link"><div class="cl-icon">📋</div>Notion Portfolio ↗</a>
+      </div>
+    </div>
+    <div>
+      <div class="s-label rv" style="margin-bottom:32px;">Experience</div>
+      <div class="timeline">
+        <div class="tl-item rv">
+          <div class="tl-year">2025 – Present</div>
+          <div class="tl-co">ALT Mobility / Grevol</div>
+          <div class="tl-role">Social Media Manager → Growth Lead</div>
+          <div class="tl-desc">Built full-funnel EV acquisition engine from scratch. Scaled monthly sales 80→143 in 4 months. Managed ₹1.5Cr+ quarterly multi-channel acquisition framework.</div>
+        </div>
+        <div class="tl-item rv d1">
+          <div class="tl-year">2021 – 2025</div>
+          <div class="tl-co">Collegedunia Web Pvt. Ltd</div>
+          <div class="tl-role">Sr. Program Manager — Social Media</div>
+          <div class="tl-desc">Scaled social following 300%, drove 100M+ Meta Reels views, reduced CPL 70%. Launched 3 YouTube channels to 180K+ combined subscribers. Produced 2000+ platform-specific assets quarterly.</div>
+        </div>
+        <div class="tl-item rv d2">
+          <div class="tl-year">2021</div>
+          <div class="tl-co">Thunder Brand Solutions</div>
+          <div class="tl-role">Social Media Specialist</div>
+          <div class="tl-desc">Executed multi-client social media calendars. Spearheaded Fintech, Educational &amp; Lifestyle campaigns.</div>
+        </div>
+        <div class="tl-item rv d3">
+          <div class="tl-year">2020</div>
+          <div class="tl-co">Markivis Pvt. Ltd.</div>
+          <div class="tl-role">Management Trainee</div>
+          <div class="tl-desc">B2B social media for 5+ enterprise accounts across IT, SaaS &amp; consulting. LinkedIn lead gen campaigns.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section id="tools">
+  <div class="s-label rv">Tech Stack</div>
+  <h2 class="s-title rv">Tools &amp; Platforms</h2>
+  <div class="tools-grid rv">
+    <span class="tool-chip">Meta Ads Manager</span><span class="tool-chip">Google Ads</span>
+    <span class="tool-chip">LinkedIn Ads</span><span class="tool-chip">YouTube Studio</span>
+    <span class="tool-chip">HubSpot</span><span class="tool-chip">LeadSquared</span>
+    <span class="tool-chip">WATI (WhatsApp CRM)</span><span class="tool-chip">Zapier</span>
+    <span class="tool-chip">Zoho Campaigns</span><span class="tool-chip">Gupshup</span>
+    <span class="tool-chip">Hootsuite</span><span class="tool-chip">Buffer</span>
+    <span class="tool-chip">Sprinklr</span><span class="tool-chip">Later</span>
+    <span class="tool-chip">Canva</span><span class="tool-chip">Premiere Pro</span>
+    <span class="tool-chip">Google Analytics</span><span class="tool-chip">SEMRush</span>
+    <span class="tool-chip">ahrefs</span><span class="tool-chip">Modash</span>
+    <span class="tool-chip">VidIQ</span><span class="tool-chip">Meta Business Suite</span>
+    <span class="tool-chip">Elementor</span><span class="tool-chip">Notion</span>
+    <span class="tool-chip">ChatGPT</span><span class="tool-chip">Google AI Studio</span>
+    <span class="tool-chip">LinkedIn Campaign Manager</span><span class="tool-chip">Google Trends</span>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-glow"></div>
+  <div class="contact-kicker rv">Let's Build Something That Compounds</div>
+  <h2 class="contact-hl rv">SOLVE<em>GROWTH</em>PROBLEMS</h2>
+  <p class="contact-sub rv">I don't just run campaigns — I build systems that compound. If you have a growth problem that needs an architect, let's talk.</p>
+  <div class="contact-btns rv">
+    <a href="mailto:swapnilpatch@gmail.com" class="btn-primary">Send a Message →</a>
+    <a href="tel:+919129598222" class="btn-secondary">Call Now ↗</a>
+  </div>
+  <div class="notion-pills rv">
+    <a href="https://www.notion.so/Performance-Backed-Case-Studies-3337df8f17bf81c29b60c1701111fdb0" target="_blank" rel="noopener" class="notion-pill">📊 Performance Case Studies</a>
+    <a href="https://www.notion.so/All-Creative-Video-Links-Master-Index-3337df8f17bf816ab0a5dc3c59ae806e" target="_blank" rel="noopener" class="notion-pill">🎬 Creative Video Index</a>
+    <a href="https://www.notion.so/Collegedunia-Master-Case-Study-2021-2025-3337df8f17bf818cb7ded7a206384602" target="_blank" rel="noopener" class="notion-pill">📑 Collegedunia Master Case Study</a>
+  </div>
+</section>
+
+<footer>
+  <div class="ft-copy">© 2025 Swapnil Tripathi — Growth Systems Architect</div>
+  <div class="ft-links">
+    <a href="mailto:swapnilpatch@gmail.com">Email</a>
+    <a href="tel:+919129598222">Phone</a>
+    <a href="https://www.notion.so/Performance-Backed-Case-Studies-3337df8f17bf81c29b60c1701111fdb0" target="_blank" rel="noopener">Notion</a>
+  </div>
+</footer>
+
+
+<!-- =============================================
+     MODAL: COLLEGEDUNIA (Featured)
+============================================= -->
+<div class="modal-overlay" id="m-cd">
+  <div class="modal">
+    <div class="modal-hero">
+      <div class="modal-hero-bg" style="background:radial-gradient(ellipse 80% 80% at 40% 60%, rgba(37,99,235,.2) 0%, transparent 65%), linear-gradient(140deg,#060A1F,#0C0C0C);"></div>
+      <button class="modal-close" onclick="closeModal('m-cd')">✕</button>
+      <div class="modal-cat">Meta · YouTube · Brand + Performance · 4 Years</div>
+      <h2 class="modal-title">Collegedunia<br>Social Media Pivot</h2>
+      <p class="modal-tagline">Rebuilding an entire digital brand — from SEO-dependent to multi-channel dominance at scale.</p>
+    </div>
+    <div class="modal-stats">
+      <div class="m-stat"><span class="m-stat-num">300%</span><span class="m-stat-lbl">Social Growth</span></div>
+      <div class="m-stat"><span class="m-stat-num">100M+</span><span class="m-stat-lbl">Meta Reels Views</span></div>
+      <div class="m-stat"><span class="m-stat-num">70%</span><span class="m-stat-lbl">CPL Reduction</span></div>
+      <div class="m-stat"><span class="m-stat-num">35%</span><span class="m-stat-lbl">Brand Awareness Uplift</span></div>
+    </div>
+    <div class="modal-body">
+      <div class="m-sec">
+        <div class="m-sec-title">The Problem</div>
+        <p class="m-text">Collegedunia was losing organic traffic share. Meta ads had irrelevant targeting and weak creatives. Category-wise lead volumes were dropping. <strong>The brand needed to build owned distribution channels</strong> — or risk becoming invisible.</p>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">The Approach</div>
+        <div class="funnel">
+          <div class="fn-step"><span class="fn-lbl">Messaging</span><span class="fn-text">Revamped content — college listings, ROI, student reviews, campus tours</span></div>
+          <div class="fn-step"><span class="fn-lbl">Channels</span><span class="fn-text">Built 3 YouTube channels, Instagram (0→20K), Telegram across 5+ verticals</span></div>
+          <div class="fn-step"><span class="fn-lbl">Performance</span><span class="fn-text">Meta Ads optimization + regional Tier 2/3 influencer campaigns</span></div>
+          <div class="fn-step"><span class="fn-lbl">Scale</span><span class="fn-text">2000+ assets quarterly, 30+ influencer campaigns, Campus Ambassador 50+ colleges</span></div>
+        </div>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">Results</div>
+        <div class="result-grid">
+          <div class="res-card"><span class="res-num">300%</span><span class="res-lbl">Social following growth</span></div>
+          <div class="res-card"><span class="res-num">70%</span><span class="res-lbl">CPL reduction on Meta</span></div>
+          <div class="res-card"><span class="res-num">150K+</span><span class="res-lbl">YouTube subscribers across channels</span></div>
+          <div class="res-card"><span class="res-num">3×</span><span class="res-lbl">MQL-to-SQL conversion improvement</span></div>
+        </div>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">Work Showcase — YouTube Films</div>
+        <div class="vid-grid">
+          <div class="vid-frame vid-clickable" onclick="loadVidFrame(this,'https://www.youtube.com/embed/09IFqjztprw?autoplay=1')">
+            <img src="https://img.youtube.com/vi/09IFqjztprw/hqdefault.jpg" class="vid-thumb-cover" alt="8 Steps Up — Collegedunia Achievement Film" loading="lazy">
+            <div class="vid-play-cover">▶</div>
+            <iframe src="" allowfullscreen></iframe>
+          </div>
+          <div class="vid-frame vid-clickable" onclick="loadVidFrame(this,'https://www.youtube.com/embed/qSOad7miWJA?autoplay=1')">
+            <img src="https://img.youtube.com/vi/qSOad7miWJA/hqdefault.jpg" class="vid-thumb-cover" alt="Theater Ad — Concept, Script & Direction" loading="lazy">
+            <div class="vid-play-cover">▶</div>
+            <iframe src="" allowfullscreen></iframe>
+          </div>
+          <div class="vid-frame vid-clickable" onclick="loadVidFrame(this,'https://www.youtube.com/embed/pBDPyhrGKy8?autoplay=1')">
+            <img src="https://img.youtube.com/vi/pBDPyhrGKy8/hqdefault.jpg" class="vid-thumb-cover" alt="Promotional Brand Film — Collegedunia" loading="lazy">
+            <div class="vid-play-cover">▶</div>
+            <iframe src="" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- INSTAGRAM PERFORMANCE PROOF ---- -->
+      <div class="m-sec">
+        <div class="m-sec-title">Instagram Performance — Real Numbers</div>
+        <p class="perf-intro">100M+ reel views, 300% follower growth — here's the proof. Screenshots from Meta Ads Manager, Instagram Insights &amp; campaign dashboards. <strong>Every number is real.</strong></p>
+        <div class="perf-shots-grid">
+          <div class="perf-shot wide"><img src="assets/perf/Average views in a bad week.png" alt="Average views in a bad week"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 1.43.51 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 1.48.51 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 1.49.28 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 1.50.48 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 1.51.28 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 1.52.22 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 1.53.57 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 1.55.17 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.03.56 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.07.32 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.08.31 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.10.28 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.21.11 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.22.02 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.22.42 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.23.14 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.23.38 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.24.21 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.24.54 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.25.32 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.26.01 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.26.33 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.27.04 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.27.39 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.28.00 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.28.36 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.29.05 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.29.46 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.31.32 PM.png" alt="Performance screenshot"></div>
+          <div class="perf-shot"><img src="assets/perf/Screenshot 2026-04-09 at 2.32.01 PM.png" alt="Performance screenshot"></div>
+        </div>
+      </div>
+
+      <!-- ---- CD CONTENT PORTFOLIO ---- -->
+      <div class="m-sec">
+        <div class="m-sec-title">Content Portfolio — What We Built</div>
+
+        <div class="cd-work-section">
+          <div class="cd-work-label">YouTube Thumbnails — High-CTR Formats</div>
+          <div class="cd-work-scroll">
+            <div class="cd-work-item sq"><img src="assets/cd-thumb/1.png" alt="CD Thumbnail 1" loading="lazy"></div>
+            <div class="cd-work-item sq"><img src="assets/cd-thumb/2.png" alt="CD Thumbnail 2" loading="lazy"></div>
+            <div class="cd-work-item sq"><img src="assets/cd-thumb/3.png" alt="CD Thumbnail 3" loading="lazy"></div>
+            <div class="cd-work-item sq"><img src="assets/cd-thumb/Thumbnail_edit.png" alt="CD Thumbnail Edit" loading="lazy"></div>
+          </div>
+        </div>
+
+        <div class="cd-work-section">
+          <div class="cd-work-label">Meme-Moment Marketing — Trend-Led Content</div>
+          <div class="cd-work-scroll">
+            <div class="cd-work-item"><img src="assets/cd-meme/1.png" alt="CD Meme Post 1" loading="lazy"></div>
+            <div class="cd-work-item"><img src="assets/cd-meme/2.png" alt="CD Meme Post 2" loading="lazy"></div>
+            <div class="cd-work-item"><img src="assets/cd-meme/3.png" alt="CD Meme Post 3" loading="lazy"></div>
+            <div class="cd-work-item"><img src="assets/cd-meme/4.png" alt="CD Meme Post 4" loading="lazy"></div>
+            <div class="cd-work-item"><img src="assets/cd-meme/5.png" alt="CD Meme Post 5" loading="lazy"></div>
+          </div>
+        </div>
+
+        <div class="cd-work-section">
+          <div class="cd-work-label">Review Posts — Film &amp; Pop Culture</div>
+          <div class="cd-work-scroll">
+            <div class="cd-work-item"><img src="assets/cd-review/1.png" alt="CD Review Post 1" loading="lazy"></div>
+            <div class="cd-work-item"><img src="assets/cd-review/2.png" alt="CD Review Post 2" loading="lazy"></div>
+          </div>
+        </div>
+
+        <div class="cd-work-section">
+          <div class="cd-work-label">Print &amp; OOH — Education Fair Materials</div>
+          <div class="cd-work-scroll">
+            <div class="cd-work-item ld"><img src="assets/cd-print/Magazine_Mockup_v02.png" alt="CD Magazine Mockup" loading="lazy"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- CAROUSEL: TINDER x COLLEGES VIRAL POST ---- -->
+      <div class="m-sec">
+        <div class="m-sec-title">Viral Carousel — Tinder × Colleges Collab</div>
+        <div class="cd-carousel-wrap">
+          <div class="cd-carousel-header">
+            <div class="cd-carousel-meta">
+              <div class="cd-carousel-label-text">Instagram Carousel Post</div>
+              <p class="cd-carousel-desc">A <strong>Tinder × Colleges brand collab concept</strong> — student-led, viral-format carousel designed to drive comments, shares &amp; brand association. Built as organic engagement bait with a community hook.</p>
+            </div>
+            <div class="cd-carousel-count">Slide <span id="cdCarSlide">1</span> / 8</div>
+          </div>
+          <div class="cd-carousel-viewport" id="cdCarViewport">
+            <div class="cd-carousel-track" id="cdCarTrack">
+              <div class="cd-carousel-slide"><img src="assets/carousel/carousel-7.jpg" alt="Keep it going — Cover" loading="lazy"></div>
+              <div class="cd-carousel-slide"><img src="assets/carousel/carousel-0.jpg" alt="Keep it going — Slide 2" loading="lazy"></div>
+              <div class="cd-carousel-slide"><img src="assets/carousel/carousel-1.jpg" alt="Keep it going — Slide 3" loading="lazy"></div>
+              <div class="cd-carousel-slide"><img src="assets/carousel/carousel-2.jpg" alt="Keep it going — Slide 4" loading="lazy"></div>
+              <div class="cd-carousel-slide"><img src="assets/carousel/carousel-3.jpg" alt="Keep it going — Slide 5" loading="lazy"></div>
+              <div class="cd-carousel-slide"><img src="assets/carousel/carousel-4.jpg" alt="Keep it going — Slide 6" loading="lazy"></div>
+              <div class="cd-carousel-slide"><img src="assets/carousel/carousel-5.jpg" alt="Keep it going — Slide 7" loading="lazy"></div>
+              <div class="cd-carousel-slide"><img src="assets/carousel/carousel-6.jpg" alt="Keep it going — Slide 8" loading="lazy"></div>
+            </div>
+          </div>
+          <div class="cd-carousel-footer">
+            <div class="cd-carousel-dots" id="cdCarDots">
+              <button class="cd-carousel-dot on" onclick="cdGoTo(0)"></button>
+              <button class="cd-carousel-dot" onclick="cdGoTo(1)"></button>
+              <button class="cd-carousel-dot" onclick="cdGoTo(2)"></button>
+              <button class="cd-carousel-dot" onclick="cdGoTo(3)"></button>
+              <button class="cd-carousel-dot" onclick="cdGoTo(4)"></button>
+              <button class="cd-carousel-dot" onclick="cdGoTo(5)"></button>
+              <button class="cd-carousel-dot" onclick="cdGoTo(6)"></button>
+              <button class="cd-carousel-dot" onclick="cdGoTo(7)"></button>
+            </div>
+            <div class="cd-carousel-nav">
+              <button class="cd-carousel-btn" id="cdCarPrev" onclick="cdPrev()" disabled>‹</button>
+              <button class="cd-carousel-btn" id="cdCarNext" onclick="cdNext()">›</button>
+            </div>
+          </div>
+          <div class="cd-viral-tag">🔗 Collab Format · Comment Chain · Organic Reach Engine</div>
+        </div>
+      </div>
+
+      <div class="modal-cta modal-cta-row">
+        <a href="https://www.notion.so/Collegedunia-Master-Case-Study-2021-2025-3337df8f17bf818cb7ded7a206384602" target="_blank" rel="noopener" class="btn-secondary">Full Case Study on Notion ↗</a>
+        <a href="mailto:swapnilpatch@gmail.com" class="btn-primary">Work Together →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: GREVOL -->
+<div class="modal-overlay" id="m-grevol">
+  <div class="modal">
+    <div class="modal-hero">
+      <div class="modal-hero-bg" style="background:radial-gradient(ellipse 80% 80% at 75% 35%, rgba(27,138,144,.25) 0%, transparent 65%), linear-gradient(140deg,#061512,#0C0C0C);"></div>
+      <button class="modal-close" onclick="closeModal('m-grevol')">✕</button>
+      <div class="modal-cat">EV · Full-Funnel · Performance Marketing · CRM</div>
+      <h2 class="modal-title">The EV Growth Engine<br>— Grevol / ALT Mobility</h2>
+      <p class="modal-tagline">How WhatsApp became the highest-converting channel through system design, not just traffic.</p>
+    </div>
+    <div class="modal-stats">
+      <div class="m-stat"><span class="m-stat-num">143</span><span class="m-stat-lbl">Peak Monthly Sales</span></div>
+      <div class="m-stat"><span class="m-stat-num">639</span><span class="m-stat-lbl">Total Conversions</span></div>
+      <div class="m-stat"><span class="m-stat-num">55%</span><span class="m-stat-lbl">CAC Reduction</span></div>
+      <div class="m-stat"><span class="m-stat-num">₹4.8K</span><span class="m-stat-lbl">WhatsApp CAC</span></div>
+    </div>
+    <div class="modal-body">
+      <div class="m-sec">
+        <div class="m-sec-title">The Problem</div>
+        <p class="m-text">Joined an EV startup at 80 monthly sales with <strong>zero digital acquisition engine</strong>. 100% offline dependency. No funnel, no CRM, no attribution. Brand simultaneously repositioning from ALT to Grevol.</p>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">The Approach</div>
+        <div class="funnel">
+          <div class="fn-step"><span class="fn-lbl">Top</span><span class="fn-text">Meta Ads + YouTube for awareness &amp; lead generation</span></div>
+          <div class="fn-step"><span class="fn-lbl">Mid</span><span class="fn-text">Structured retargeting with lead qualification filters</span></div>
+          <div class="fn-step"><span class="fn-lbl">Bottom</span><span class="fn-text">Stage-wise WhatsApp CRM journeys + tele-calling alignment</span></div>
+          <div class="fn-step"><span class="fn-lbl">Brand</span><span class="fn-text">OEM repositioning across digital, dealerships, YouTube &amp; BTL</span></div>
+        </div>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">The Breakthrough</div>
+        <div class="insight-box">
+          <em>WhatsApp became the highest-converting channel</em> — not because of traffic volume, but because of system design. ₹4.8K CAC vs ₹8–9K blended digital average.
+        </div>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">Results</div>
+        <div class="result-grid">
+          <div class="res-card"><span class="res-num">80→143</span><span class="res-lbl">Monthly sales in 4 months</span></div>
+          <div class="res-card"><span class="res-num">68%</span><span class="res-lbl">Digital contribution to total sales</span></div>
+          <div class="res-card"><span class="res-num">55%</span><span class="res-lbl">CAC reduction in 60 days</span></div>
+          <div class="res-card"><span class="res-num">20%</span><span class="res-lbl">Lead-to-contact ratio improvement</span></div>
+        </div>
+      </div>
+      <!-- Vertical Slideshow — Grevol metrics -->
+      <div class="m-sec">
+        <div class="m-sec-title">Campaign Performance</div>
+        <p class="m-text" style="margin-bottom:20px;">Scroll through campaign performance snapshots. <em style="color:var(--accent);font-style:normal;">→ Screenshots to be updated</em></p>
+        <div class="metrics-slideshow">
+          <div class="metric-slide">
+            <div class="metric-slide-bg" style="background:linear-gradient(160deg,#061512,#0C0C0C);"></div>
+            <div class="metric-slide-content"><div class="ms-platform">WhatsApp CRM</div><div class="ms-metric">₹4.8K</div><div class="ms-label">Acquisition Cost Per Unit</div></div>
+          </div>
+          <div class="metric-slide">
+            <div class="metric-slide-bg" style="background:linear-gradient(160deg,#0A1520,#0C0C0C);"></div>
+            <div class="metric-slide-content"><div class="ms-platform">Meta Ads Manager</div><div class="ms-metric">55%</div><div class="ms-label">CAC Reduction — 60 Days</div></div>
+          </div>
+          <div class="metric-slide">
+            <div class="metric-slide-bg" style="background:linear-gradient(160deg,#1A0505,#0C0C0C);"></div>
+            <div class="metric-slide-content"><div class="ms-platform">Sales Dashboard</div><div class="ms-metric">639</div><div class="ms-label">Total EV Conversions</div></div>
+          </div>
+          <div class="metric-slide">
+            <div class="metric-slide-bg" style="background:linear-gradient(160deg,#0A0A1A,#0C0C0C);"></div>
+            <div class="metric-slide-content"><div class="ms-platform">Funnel Analytics</div><div class="ms-metric">68%</div><div class="ms-label">Digital % of Total Sales</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">Work Showcase</div>
+        <div class="vid-grid">
+          <div class="vid-frame"><iframe data-src="https://player.vimeo.com/video/1175449697" allowfullscreen allow="autoplay"></iframe></div>
+          <div class="vid-frame"><iframe data-src="https://player.vimeo.com/video/1175449478" allowfullscreen allow="autoplay"></iframe></div>
+          <div class="vid-frame"><iframe data-src="https://player.vimeo.com/video/1175449537" allowfullscreen allow="autoplay"></iframe></div>
+          <div class="vid-frame"><iframe data-src="https://player.vimeo.com/video/1175449595" allowfullscreen allow="autoplay"></iframe></div>
+        </div>
+      </div>
+      <div class="modal-cta"><a href="mailto:swapnilpatch@gmail.com" class="btn-primary">Discuss a Similar Project →</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: STUDY ABROAD -->
+<div class="modal-overlay" id="m-studyabroad">
+  <div class="modal">
+    <div class="modal-hero">
+      <div class="modal-hero-bg" style="background:radial-gradient(ellipse 80% 80% at 25% 65%, rgba(234,88,12,.22) 0%, transparent 65%), linear-gradient(140deg,#150E04,#0C0C0C);"></div>
+      <button class="modal-close" onclick="closeModal('m-studyabroad')">✕</button>
+      <div class="modal-cat">YouTube · SEO · Organic Acquisition</div>
+      <h2 class="modal-title">Building a 0→20K<br>YouTube Growth Engine</h2>
+      <p class="modal-tagline">Turned YouTube into a search engine + conversion funnel for high-intent Study Abroad students.</p>
+    </div>
+    <div class="modal-stats">
+      <div class="m-stat"><span class="m-stat-num">20K+</span><span class="m-stat-lbl">Subscribers (Organic)</span></div>
+      <div class="m-stat"><span class="m-stat-num">2.6M+</span><span class="m-stat-lbl">Views Generated</span></div>
+      <div class="m-stat"><span class="m-stat-num">500+</span><span class="m-stat-lbl">Videos Published</span></div>
+      <div class="m-stat"><span class="m-stat-num">8–10%</span><span class="m-stat-lbl">Inbound CVR</span></div>
+    </div>
+    <div class="modal-body">
+      <div class="m-sec">
+        <div class="m-sec-title">The Problem</div>
+        <p class="m-text">Collegedunia was losing organic traffic share. The Study Abroad vertical needed a brand new acquisition engine — not just better ads, but a <strong>compounding, evergreen traffic system</strong>.</p>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">The Approach</div>
+        <div class="funnel">
+          <div class="fn-step"><span class="fn-lbl">Discovery</span><span class="fn-text">Search-first content targeting intent-driven topics (cost, visa, ranking, ROI)</span></div>
+          <div class="fn-step"><span class="fn-lbl">Consider</span><span class="fn-text">Student interviews, campus tours, admission process checklists</span></div>
+          <div class="fn-step"><span class="fn-lbl">Convert</span><span class="fn-text">500+ videos for keyword coverage + Shorts for top-of-funnel reach</span></div>
+        </div>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">Work Showcase</div>
+        <div class="vid-grid">
+          <div class="vid-frame vid-clickable" onclick="loadVidFrame(this,'https://www.youtube.com/embed/TcuYNLE39tE?autoplay=1')">
+            <img src="https://img.youtube.com/vi/TcuYNLE39tE/hqdefault.jpg" class="vid-thumb-cover" alt="Study Abroad Channel">
+            <div class="vid-play-cover">▶</div>
+            <iframe src="" allowfullscreen></iframe>
+          </div>
+          <div class="vid-frame vid-clickable" onclick="loadVidFrame(this,'https://www.youtube.com/embed/ESCgfNND9KQ?autoplay=1')">
+            <img src="https://img.youtube.com/vi/ESCgfNND9KQ/hqdefault.jpg" class="vid-thumb-cover" alt="Study Abroad Series">
+            <div class="vid-play-cover">▶</div>
+            <iframe src="" allowfullscreen></iframe>
+          </div>
+          <div class="vid-frame vid-clickable" onclick="loadVidFrame(this,'https://www.youtube.com/embed/Leiq00HD1ts?autoplay=1')">
+            <img src="https://img.youtube.com/vi/Leiq00HD1ts/hqdefault.jpg" class="vid-thumb-cover" alt="Study Abroad Content">
+            <div class="vid-play-cover">▶</div>
+            <iframe src="" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+      <div class="modal-cta modal-cta-row">
+        <a href="https://www.notion.so/Building-a-0-20K-Subscriber-YouTube-Growth-Engine-3297df8f17bf814c8142c318e9f4d688" target="_blank" rel="noopener" class="btn-secondary">Full Case Study on Notion ↗</a>
+        <a href="mailto:swapnilpatch@gmail.com" class="btn-primary">Let's Build Your Channel →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: UPSC -->
+<div class="modal-overlay" id="m-upsc">
+  <div class="modal">
+    <div class="modal-hero">
+      <div class="modal-hero-bg" style="background:radial-gradient(ellipse 80% 80% at 65% 30%, rgba(99,102,241,.22) 0%, transparent 65%), linear-gradient(140deg,#060816,#0C0C0C);"></div>
+      <button class="modal-close" onclick="closeModal('m-upsc')">✕</button>
+      <div class="modal-cat">YouTube · Influencer · Authority-Driven Growth</div>
+      <h2 class="modal-title">UPSC Scale-Up<br>— Prepp IAS</h2>
+      <p class="modal-tagline">From 50K to 180K subscribers using distribution networks, educator authority, and non-algorithmic growth.</p>
+    </div>
+    <div class="modal-stats">
+      <div class="m-stat"><span class="m-stat-num">50K→180K</span><span class="m-stat-lbl">Subscribers</span></div>
+      <div class="m-stat"><span class="m-stat-num">3.6×</span><span class="m-stat-lbl">Growth Multiplier</span></div>
+      <div class="m-stat"><span class="m-stat-num">High</span><span class="m-stat-lbl">Engagement Velocity</span></div>
+      <div class="m-stat"><span class="m-stat-num">Trust</span><span class="m-stat-lbl">Authority Model</span></div>
+    </div>
+    <div class="modal-body">
+      <div class="m-sec">
+        <div class="m-sec-title">The Problem</div>
+        <p class="m-text">UPSC content is <strong>trust-driven</strong>. Users follow known educators and proven mentors. Pure SEO strategy wouldn't break through a saturated space without credibility at its core.</p>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">The Approach</div>
+        <div class="funnel">
+          <div class="fn-step"><span class="fn-lbl">Authority</span><span class="fn-text">Educator-led content — face-driven formats, known mentors front and center</span></div>
+          <div class="fn-step"><span class="fn-lbl">Distribute</span><span class="fn-text">Influencer collaborations to activate distribution flywheel</span></div>
+          <div class="fn-step"><span class="fn-lbl">Retain</span><span class="fn-text">Trust-based content: lectures, strategy, PYQs, student guidance</span></div>
+        </div>
+      </div>
+      <div class="m-sec">
+        <div class="m-sec-title">The Breakthrough</div>
+        <div class="insight-box">
+          Not everything is SEO. I leveraged <em>people, authority, and distribution networks</em>. The flywheel: Educator Content → Audience Trust → Shares → Subscriber Growth → Repeat Consumption.
+        </div>
+      </div>
+      <div class="modal-cta"><a href="mailto:swapnilpatch@gmail.com" class="btn-primary">Let's Scale Your Channel →</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- VIDEO MODAL -->
+<div id="vid-modal">
+  <div class="vid-modal-inner">
+    <button class="vid-modal-x" onclick="closeVidModal()">✕ CLOSE</button>
+    <div class="vid-modal-screen">
+      <iframe id="vid-frame" src="" allowfullscreen allow="autoplay; fullscreen"></iframe>
+    </div>
+  </div>
+</div>
+
+
+<!-- =============================================
+     JAVASCRIPT
+============================================= -->
+<script>
+
+/* ==== CURSOR ==== */
+const dot = document.getElementById('c-dot');
+const ring = document.getElementById('c-ring');
+let mx=0, my=0, rx=0, ry=0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  dot.style.left = mx+'px'; dot.style.top = my+'px';
+});
+(function animRing() {
+  rx += (mx-rx)*.1; ry += (my-ry)*.1;
+  ring.style.left = rx+'px'; ring.style.top = ry+'px';
+  requestAnimationFrame(animRing);
+})();
+document.addEventListener('mousedown', () => ring.classList.add('click'));
+document.addEventListener('mouseup', () => ring.classList.remove('click'));
+document.querySelectorAll('a,button,.cs-card,.wb-item,.cap-item,.tl-item,.tool-chip').forEach(el => {
+  el.addEventListener('mouseenter', () => ring.classList.add('big'));
+  el.addEventListener('mouseleave', () => ring.classList.remove('big'));
+});
+document.querySelectorAll('.btn-primary,.btn-secondary').forEach(btn => {
+  btn.addEventListener('mousemove', e => {
+    const r = btn.getBoundingClientRect();
+    btn.style.transform = `translate(${(e.clientX-(r.left+r.width/2))*.18}px, ${(e.clientY-(r.top+r.height/2))*.18}px)`;
+  });
+  btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+});
+
+/* ==== LOADER — LetterGlitch canvas (TXT 4 concept) ==== */
+(function initGlitchLoader() {
+  const canvas = document.getElementById('glitch-canvas');
+  const ctx = canvas.getContext('2d');
+  const ldStatus = document.getElementById('ld-status');
+  const ldPbar = document.getElementById('ld-pbar');
+  const loader = document.getElementById('loader');
+
+  // Amber/gold color palette (not blue)
+  const colors = ['#E8A020','#B87800','#F5C060','#A06010','#D4900E','#FFD080'];
+  const chars = '.,:;-*#@%&~+'.split('');
+  const fontSize = 14, charW = 9, charH = 18;
+
+  let letters = [], cols = 0, rows = 0;
+  let lastGlitch = Date.now();
+
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cols = Math.ceil(window.innerWidth / charW);
+    rows = Math.ceil(window.innerHeight / charH);
+    letters = Array.from({length: cols*rows}, () => ({
+      char: chars[Math.floor(Math.random()*chars.length)],
+      color: colors[Math.floor(Math.random()*colors.length)],
+      targetColor: colors[Math.floor(Math.random()*colors.length)],
+      progress: 1
+    }));
+  }
+
+  function drawLetters() {
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    ctx.font = `${fontSize}px monospace`;
+    ctx.textBaseline = 'top';
+    letters.forEach((l, i) => {
+      ctx.fillStyle = l.color;
+      ctx.fillText(l.char, (i%cols)*charW, Math.floor(i/cols)*charH);
+    });
+  }
+
+  function updateLetters() {
+    const n = Math.max(1, Math.floor(letters.length * 0.04));
+    for (let i = 0; i < n; i++) {
+      const idx = Math.floor(Math.random()*letters.length);
+      letters[idx].char = chars[Math.floor(Math.random()*chars.length)];
+      letters[idx].targetColor = colors[Math.floor(Math.random()*colors.length)];
+      letters[idx].progress = 0;
+    }
+  }
+
+  function hexToRgb(h) {
+    const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
+    return r ? {r:parseInt(r[1],16), g:parseInt(r[2],16), b:parseInt(r[3],16)} : null;
+  }
+
+  function animGlitch() {
+    const now = Date.now();
+    if (now - lastGlitch >= 45) {
+      updateLetters(); drawLetters(); lastGlitch = now;
+    }
+    let needsRedraw = false;
+    letters.forEach(l => {
+      if (l.progress < 1) {
+        const s = hexToRgb(l.color), e = hexToRgb(l.targetColor);
+        l.progress = Math.min(1, l.progress + 0.06);
+        if (s && e) {
+          l.color = `rgb(${Math.round(s.r+(e.r-s.r)*l.progress)},${Math.round(s.g+(e.g-s.g)*l.progress)},${Math.round(s.b+(e.b-s.b)*l.progress)})`;
+          needsRedraw = true;
+        }
+      }
+    });
+    if (needsRedraw) drawLetters();
+    requestAnimationFrame(animGlitch);
+  }
+
+  resize(); animGlitch();
+
+  // Loader progress — fixed step (no Zeno's paradox)
+  const stages = [
+    {t:0.12,  msg:'Initializing portfolio...'},
+    {t:0.30,  msg:'Loading case studies...'},
+    {t:0.55,  msg:'Importing media assets...'},
+    {t:0.78,  msg:'Calibrating growth metrics...'},
+    {t:0.92,  msg:'Almost ready...'},
+    {t:1.00,  msg:'Launch sequence complete.'},
+  ];
+
+  let progress = 0;
+  const totalBars = 20;
+  function renderBar(p) {
+    const filled = Math.floor(p * totalBars);
+    const pct = Math.round(p * 100);
+    ldPbar.innerHTML = `<span style="color:#3A3F6A;">[</span><span style="color:var(--accent);">${'▓'.repeat(filled)}</span><span style="color:#3A3F6A;">${'░'.repeat(totalBars - filled)}</span><span style="color:#3A3F6A;">]</span><span class="ld-pct">${pct}%</span>`;
+  }
+
+  document.body.style.overflow = 'hidden';
+  renderBar(0);
+
+  function advanceLoader() {
+    const stage = stages.find(s => progress < s.t);
+    if (!stage) {
+      // All stages done — dismiss loader
+      setTimeout(() => {
+        loader.classList.add('out');
+        document.body.style.overflow = '';
+        startCounters();
+      }, 500);
+      return;
+    }
+    // Fixed minimum step ensures progress always reaches stage.t
+    const remaining = stage.t - progress;
+    const step = Math.max(remaining / (Math.random() * 5 + 3), 0.018);
+    progress = Math.min(progress + step, stage.t);
+    renderBar(progress);
+    ldStatus.textContent = stage.msg;
+    setTimeout(advanceLoader, Math.random() * 70 + 35);
+  }
+
+  // Start loader immediately — don't wait for 'load' event (fonts/images can delay it)
+  setTimeout(advanceLoader, 120);
+})();
+
+/* ==== HERO — WebGL Shader (TXT 3 concept) ==== */
+(function initHeroShader() {
+  const canvas = document.getElementById('hero-canvas');
+  const gl = canvas.getContext('webgl2');
+  if (!gl) return;
+
+  function resize() {
+    const dpr = Math.max(1, 0.5 * devicePixelRatio);
+    canvas.width  = innerWidth * dpr;
+    canvas.height = innerHeight * dpr;
+    canvas.style.width  = innerWidth + 'px';
+    canvas.style.height = innerHeight + 'px';
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+
+  const vs = `#version 300 es
+precision highp float;
+in vec4 position;
+void main(){gl_Position=position;}`;
+
+  // Nebula/aurora shader — TXT 3, warm amber/orange palette
+  const fs = `#version 300 es
+precision highp float;
+out vec4 O;
+uniform vec2 resolution;
+uniform float time;
+#define FC gl_FragCoord.xy
+#define T time
+#define R resolution
+#define MN min(R.x,R.y)
+
+float rnd(vec2 p){p=fract(p*vec2(12.9898,78.233));p+=dot(p,p+34.56);return fract(p.x*p.y);}
+float noise(in vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.-2.*f);
+  float a=rnd(i),b=rnd(i+vec2(1,0)),c=rnd(i+vec2(0,1)),d=rnd(i+1.);
+  return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}
+float fbm(vec2 p){float t=.0,a=1.;mat2 m=mat2(1.,-.5,.2,1.2);
+  for(int i=0;i<5;i++){t+=a*noise(p);p*=2.*m;a*=.5;}return t;}
+float clouds(vec2 p){float d=1.,t=.0;
+  for(float i=.0;i<3.;i++){float a=d*fbm(i*10.+p.x*.2+.2*(1.+i)*p.y+d+i*i+p);
+    t=mix(t,d,a);d=a;p*=2./(i+1.);}return t;}
+void main(void){
+  vec2 uv=(FC-.5*R)/MN,st=uv*vec2(2,1);
+  vec3 col=vec3(0);
+  float bg=clouds(vec2(st.x+T*.35,-st.y));
+  uv*=1.-.3*(sin(T*.15)*.5+.5);
+  for(float i=1.;i<12.;i++){
+    uv+=.1*cos(i*vec2(.1+.01*i,.8)+i*i+T*.4+.1*uv.x);
+    vec2 p=uv;float d=length(p);
+    // Amber/gold tones: vec3(2, 0.8, 0.1) gives orange-amber
+    col+=.00125/d*(cos(sin(i)*vec3(2.,.8,.1))+1.);
+    float b=noise(i+p+bg*1.731);
+    col+=.002*b/length(max(p,vec2(b*p.x*.02,p.y)));
+    col=mix(col,vec3(bg*.18,bg*.09,bg*.02),d);
+  }
+  O=vec4(col,1);
+}`;
+
+  function compileShader(type, src) {
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    return sh;
+  }
+
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compileShader(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, compileShader(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,1,-1,-1,1,1,1,-1]), gl.STATIC_DRAW);
+
+  const pos = gl.getAttribLocation(prog, 'position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+
+  prog.res = gl.getUniformLocation(prog, 'resolution');
+  prog.tim = gl.getUniformLocation(prog, 'time');
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  function render(now) {
+    gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.useProgram(prog);
+    gl.uniform2f(prog.res, canvas.width, canvas.height);
+    gl.uniform1f(prog.tim, now * 1e-3);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  requestAnimationFrame(render);
+})();
+
+/* ==== SCROLL PROGRESS ==== */
+const sProg = document.getElementById('s-prog');
+window.addEventListener('scroll', () => {
+  sProg.style.width = (window.scrollY / (document.documentElement.scrollHeight - innerHeight) * 100) + '%';
+}, {passive:true});
+
+/* ==== NAV ==== */
+const navEl = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  navEl.classList.toggle('scrolled', window.scrollY > 60);
+}, {passive:true});
+
+/* ==== 3D SCROLL CARD (TXT 2 concept) ==== */
+const card3d = document.getElementById('about-card-3d');
+const aboutSec = document.getElementById('about');
+window.addEventListener('scroll', () => {
+  if (!card3d || !aboutSec) return;
+  const progress = Math.max(0, Math.min(1, 1 - (aboutSec.getBoundingClientRect().top / innerHeight) * 1.1));
+  card3d.style.transform = `perspective(1400px) rotateX(${18 * (1 - progress)}deg)`;
+}, {passive:true});
+
+/* ==== SCROLL REVEAL ==== */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, {threshold:0.06, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+/* ==== SMOOTH SCROLL ==== */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const href = a.getAttribute('href');
+    if (!href || href === '#') return;
+    try {
+      const t = document.querySelector(href);
+      if (t) { e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
+    } catch(err) {}
+  });
+});
+
+/* ==== COUNTER ANIMATION ==== */
+function animCounter(el) {
+  const target = parseFloat(el.dataset.count);
+  const suffix = el.dataset.suffix || '';
+  const dur = 1600, start = performance.now();
+  (function tick(now) {
+    const p = Math.min((now-start)/dur, 1);
+    const ease = 1 - Math.pow(1-p, 3);
+    el.textContent = Math.round(ease*target) + suffix;
+    if (p < 1) requestAnimationFrame(tick);
+  })(start);
+}
+function startCounters() {
+  document.querySelectorAll('[data-count]').forEach(el => animCounter(el));
+}
+
+/* ==== WORK BANK TABS ==== */
+function setTab(btn, cat) {
+  document.querySelectorAll('.wb-tab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  const items = [...document.querySelectorAll('.wb-item')];
+  items.filter(el => cat !== 'all' && el.dataset.cat !== cat).forEach(el => {
+    el.style.display = 'none'; el.classList.remove('show');
+  });
+  items.filter(el => cat === 'all' || el.dataset.cat === cat).forEach((el, i) => {
+    el.style.display = 'flex'; el.classList.remove('show');
+    void el.offsetWidth;
+    el.style.animationDelay = (i * 40) + 'ms';
+    el.classList.add('show');
+  });
+}
+
+/* ==== MODALS ==== */
+function openCSModal(id) {
+  const ov = document.getElementById(id);
+  ov.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  ov.querySelectorAll('iframe[data-src]').forEach(f => { if (!f.src || f.src === location.href) f.src = f.dataset.src; });
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.querySelectorAll('.modal-overlay').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) { ov.classList.remove('open'); document.body.style.overflow = ''; } });
+});
+
+/* ==== VIDEO MODAL ==== */
+const vidModal = document.getElementById('vid-modal');
+const vidFrame = document.getElementById('vid-frame');
+function openVidModal(src) { vidFrame.src = src; vidModal.classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeVidModal() { vidModal.classList.remove('open'); vidFrame.src = ''; document.body.style.overflow = ''; }
+vidModal.addEventListener('click', e => { if (e.target === vidModal) closeVidModal(); });
+
+/* ==== ESC ==== */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  closeVidModal();
+  document.body.style.overflow = '';
+});
+
+/* ==== VIDEO FRAME THUMBNAIL LOADER ==== */
+function loadVidFrame(el, src) {
+  if (el.classList.contains('loaded')) return;
+  const iframe = el.querySelector('iframe');
+  iframe.src = src;
+  el.classList.add('loaded');
+}
+
+/* ==== CD CAROUSEL — Tinder x Colleges ==== */
+(function initCdCarousel() {
+  const track = document.getElementById('cdCarTrack');
+  const viewport = document.getElementById('cdCarViewport');
+  const prevBtn = document.getElementById('cdCarPrev');
+  const nextBtn = document.getElementById('cdCarNext');
+  const slideCount = document.getElementById('cdCarSlide');
+  const dots = document.querySelectorAll('.cd-carousel-dot');
+  if (!track) return;
+
+  const slides = track.querySelectorAll('.cd-carousel-slide');
+  const total = slides.length;
+  let current = 0;
+  let startX = 0, isDragging = false, dragDelta = 0;
+
+  function getSlideWidth() {
+    if (!slides[0]) return 220;
+    const style = window.getComputedStyle(track);
+    const gap = parseInt(style.gap) || 12;
+    return slides[0].offsetWidth + gap;
+  }
+
+  function goTo(idx) {
+    current = Math.max(0, Math.min(idx, total - 1));
+    track.style.transform = `translateX(-${current * getSlideWidth()}px)`;
+    dots.forEach((d, i) => d.classList.toggle('on', i === current));
+    if (slideCount) slideCount.textContent = current + 1;
+    if (prevBtn) prevBtn.disabled = current === 0;
+    if (nextBtn) nextBtn.disabled = current === total - 1;
+  }
+
+  window.cdGoTo = function(idx) { goTo(idx); };
+  window.cdPrev = function() { goTo(current - 1); };
+  window.cdNext = function() { goTo(current + 1); };
+
+  // Drag support
+  viewport.addEventListener('mousedown', e => {
+    isDragging = true; startX = e.clientX;
+    track.classList.add('dragging');
+  });
+  document.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    dragDelta = e.clientX - startX;
+  });
+  document.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    track.classList.remove('dragging');
+    if (dragDelta < -50) goTo(current + 1);
+    else if (dragDelta > 50) goTo(current - 1);
+    dragDelta = 0;
+  });
+  // Touch support
+  viewport.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+  viewport.addEventListener('touchend', e => {
+    const delta = e.changedTouches[0].clientX - startX;
+    if (delta < -40) goTo(current + 1);
+    else if (delta > 40) goTo(current - 1);
+  });
+
+  goTo(0);
+})();
+
+/* ==== WORK BANK — Staggered scroll-reveal per item ==== */
+(function initWbScrollReveal() {
+  const grid = document.getElementById('wbGrid');
+  if (!grid) return;
+  let revealed = false;
+  const io2 = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !revealed) {
+        revealed = true;
+        // All items start without 'show' — add them one by one with stagger
+        const items = [...e.target.querySelectorAll('.wb-item')];
+        items.forEach((item, i) => {
+          setTimeout(() => {
+            item.style.animationDelay = '0ms';
+            item.classList.add('show');
+          }, i * 55);
+        });
+        io2.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.05});
+  io2.observe(grid);
+})();
+
+</script>
+</body>
+</html>

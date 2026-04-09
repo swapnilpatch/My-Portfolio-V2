@@ -1,4 +1,3 @@
-# My-Portfolio-V2[README.md](https://github.com/user-attachments/files/26604962/README.md)
 # Swapnil Tripathi — Portfolio
 
 Personal portfolio for **Swapnil Tripathi**, Growth Systems Architect.
